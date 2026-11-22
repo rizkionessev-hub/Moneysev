@@ -13,7 +13,7 @@
 :root[data-theme="dark"]{--bg:#0e1020;--card:#181b33;--tx:#eceefb;--mu:#9a9fc4;--pr:#8f94ff;--on:#0e1020;--ln:#262a4b;--ng:#ff7b97;--ok:#3ddc9b;--hero:#2a2fa8;--bar:#2a2e52;color-scheme:dark}
 *{box-sizing:border-box}html,body{margin:0}
 body{background:var(--bg);color:var(--tx);font:400 15px/1.45 "Plus Jakarta Sans",system-ui,sans-serif}
-#wrap{max-width:480px;margin:0 auto;padding:14px 16px 96px}
+#wrap{max-width:480px;margin:0 auto;padding:14px 16px 100px}
 header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 h1{font-size:20px;font-weight:800;margin:0}
 select,input{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:9px 10px;width:100%}
@@ -33,10 +33,10 @@ button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:9px 14px;
 button.g{background:transparent;color:var(--mu);padding:4px 8px}
 button.w{width:100%;margin-top:10px}
 nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--ln);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom,0px)}
-nav div{display:flex;width:100%;max-width:480px}
+nav div{display:flex;width:100%;max-width:480px;align-items:flex-end}
 nav button{flex:1;background:none;color:var(--mu);border-radius:0;padding:14px 4px;font-size:13px}
 nav button.on{color:var(--pr);box-shadow:inset 0 3px 0 var(--pr)}
-.fab{position:fixed;right:max(16px,calc(50% - 224px));bottom:calc(68px + env(safe-area-inset-bottom,0px));border-radius:30px;padding:14px 20px;box-shadow:0 6px 18px rgba(47,53,201,.4)}
+nav button.plus{flex:0 0 58px;width:58px;height:58px;border-radius:50%;background:var(--pr);color:var(--on);font-size:30px;line-height:1;padding:0;margin:0 6px 12px;box-shadow:0 6px 16px rgba(47,53,201,.4)}
 .sheet{position:fixed;inset:0;background:rgba(10,12,30,.55);display:flex;align-items:flex-end;justify-content:center;z-index:9}
 .sheet>div{background:var(--card);width:100%;max-width:480px;max-height:92%;overflow:auto;border-radius:22px 22px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));display:grid;gap:10px}
 .tog{display:flex;gap:8px}.tog button{flex:1;background:var(--bg);color:var(--mu)}.tog button.on{background:var(--pr);color:var(--on)}
@@ -46,64 +46,72 @@ label{font-size:12px;color:var(--mu);display:block;margin-bottom:3px}
 .val{background:var(--bg);border-radius:12px;padding:10px 12px;margin:8px 0}
 </style></head><body>
 <div id="wrap">
-<header><h1>Moneysev</h1><select id="ms" onchange="S.m=+this.value;go()"></select></header>
+<header><div><h1>Moneysev</h1><div class="mu" id="sub"></div></div><select id="ms" onchange="S.m=+this.value;go()"></select></header>
 <div id="app"></div></div>
 <nav><div id="nav"></div></nav>
 <div id="modal"></div>
 <script>
 const MN=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
-const KEY="moneysev-v1",$=s=>document.querySelector(s);
+const KEY="moneysev-v2",$=s=>document.querySelector(s);
 const rp=n=>(n<0?"-":"")+"Rp"+Math.abs(Math.round(n)).toLocaleString("id-ID");
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const sum=a=>a.reduce((s,t)=>s+t.v,0);
-const seed=()=>({m:new Date().getMonth(),tab:"home",target:5000000,
- accs:["Cash","Seabank","BRI","Dana","Dana Darurat"],open:{},
- bud:[["Tabungan Wajib",800000],["Tagihan Wifi",0],["Tagihan Listrik",0],["Transport",250000],["Jajan",350000],["Belanja Bulanan",130000],["Kuota Internet",50000],["Rokok",150000],["Tabungan Darurat",100000],["Admin Bank",20000],["Lain Lain",100000],["Bayar Cicilan",500000]].map(b=>({n:b[0],a:b[1]})),
- gold:{g:0.0027,p:2224000},rd:{u:0,nab:2000},loans:[],tx:[]});
-let S=null,T="out",E=0;
-try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
-S=S||seed();
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const mk=n=>({id:Date.now(),name:n,m:new Date().getMonth(),tab:"home",target:5000000,accs:["Cash"],open:{},bud:[],gold:{g:0,p:2224},rd:{u:0,nab:2000},loans:[],tx:[]});
+let R=null,S=null,T="out",E=0;
+try{R=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(!R){R={ds:[]};try{const o=JSON.parse(localStorage.getItem("moneysev-v1"));
+ if(o&&o.accs){o.name="Utama";o.id=1;o.tab="home";if(o.gold&&o.gold.p>100000)o.gold.p/=1000;delete o.demo;R.ds.push(o)}}catch(e){}}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(R))}catch(e){}};
 const opts=(l,sel)=>l.map(a=>`<option ${a==sel?"selected":""}>${esc(a)}</option>`).join("");
-function C(){
- const bal={};S.accs.forEach(a=>bal[a]=S.open[a]||0);
- S.tx.forEach(t=>{if(bal[t.acc]!==undefined)bal[t.acc]+=t.type=="in"?t.v:-t.v});
- const liq=S.accs.reduce((s,a)=>s+bal[a],0),gold=S.gold.g*S.gold.p,rd=S.rd.u*S.rd.nab,non=gold+rd,aset=liq+non;
- const mt=S.tx.filter(t=>t.m==S.m&&!t.ln),inc=sum(mt.filter(t=>t.type=="in")),outs=mt.filter(t=>t.type=="out"),exp=sum(outs);
- const rows=S.bud.map(b=>{const r=sum(outs.filter(t=>t.cat==b.n));return{...b,r,s:b.a-r}});
- const nm=S.bud.map(b=>b.n),out=sum(outs.filter(t=>!nm.includes(t.cat))),sur=inc-exp;let est;
- if(aset>=S.target)est="Target tercapai";else if(sur<=0)est="Pemasukan kurang";else est=Math.ceil((S.target-aset)/sur)+" bulan lagi";
- const sisa=l=>l.v-l.paid,H=S.loans.filter(l=>l.t=="h"),P=S.loans.filter(l=>l.t=="p");
+function C(D){D=D||S;
+ const bal={};D.accs.forEach(a=>bal[a]=D.open[a]||0);
+ D.tx.forEach(t=>{if(bal[t.acc]!==undefined)bal[t.acc]+=t.type=="in"?t.v:-t.v});
+ const liq=D.accs.reduce((s,a)=>s+bal[a],0),gold=D.gold.g*1000*D.gold.p,rd=D.rd.u*D.rd.nab,non=gold+rd,aset=liq+non;
+ const mt=D.tx.filter(t=>t.m==D.m&&!t.ln),inc=sum(mt.filter(t=>t.type=="in")),outs=mt.filter(t=>t.type=="out"),exp=sum(outs);
+ const rows=D.bud.map(b=>{const r=sum(outs.filter(t=>t.cat==b.n));return{...b,r,s:b.a-r}});
+ const nm=D.bud.map(b=>b.n),out=sum(outs.filter(t=>!nm.includes(t.cat))),sur=inc-exp;let est;
+ if(aset>=D.target)est="Target tercapai";else if(sur<=0)est="Pemasukan kurang";else est=Math.ceil((D.target-aset)/sur)+" bulan lagi";
+ const sisa=l=>l.v-l.paid,H=D.loans.filter(l=>l.t=="h"),P=D.loans.filter(l=>l.t=="p");
  return{bal,liq,gold,rd,non,aset,mt,inc,exp,rows,out,sur,est,H,P,hs:H.reduce((s,l)=>s+sisa(l),0),ps:P.reduce((s,l)=>s+sisa(l),0)}}
+function pick(){
+ const cs=R.ds.map(d=>({d,c:C(d)})),tot=cs.reduce((s,x)=>s+x.c.aset,0);
+ return `<div class="card hero"><small>Total uang keseluruhan</small><div class="big">${rp(tot)}</div><small>${R.ds.length} dompet</small></div>
+ <div class="card"><h2>Pilih dompet</h2><div class="sub">Ketuk dompet untuk masuk.</div>
+ ${cs.map((x,i)=>`<div class="item row" style="cursor:pointer" onclick="enter(${i})"><div><b>${esc(x.d.name)}</b><div class="mu">Saldo ${rp(x.c.liq)}</div></div>
+ <div style="text-align:right"><b>${rp(x.c.aset)}</b><div class="mu">total uang</div><button class="g" onclick="event.stopPropagation();askDel(${i})">Hapus</button></div></div>`).join("")||`<div class="mu">Belum ada dompet. Buat yang pertama di bawah.</div>`}
+ <div class="f2" style="margin-top:10px"><input id="dn" placeholder="Contoh: Multimedia"><button onclick="addD()">Buat dompet</button></div></div>`}
+function enter(i){S=R.ds[i];S.tab="home";go()}
+function addD(){const n=$("#dn").value.trim();if(!n||R.ds.some(d=>d.name==n))return;R.ds.push(mk(n));go()}
+function askDel(i){sheet(`<b>Hapus dompet ${esc(R.ds[i].name)}?</b><div class="mu">Semua akun, transaksi, dan hutang di dalamnya ikut terhapus.</div><button style="background:var(--ng)" onclick="R.ds.splice(${i},1);closeM();go()">Hapus dompet</button><button class="g" onclick="closeM()">Batal</button>`)}
 function home(c){
- const p=Math.max(0,Math.min(100,c.aset/S.target*100));
+ const p=Math.max(0,Math.min(100,c.aset/S.target*100)),l=S.tx.filter(t=>t.m==S.m).reverse();
  return `<div class="card hero"><small>Total aset</small><div class="big">${rp(c.aset)}</div>
  <div class="row"><small>Liquid Assets<br><b>${rp(c.liq)}</b></small><small style="text-align:right">Non Liquid Assets<br><b>${rp(c.non)}</b></small></div>
  <div class="row" style="margin-top:14px"><small>Target ${rp(S.target)}</small><small>${p.toFixed(0)}%</small></div>
  <div class="bar"><i style="width:${p}%"></i></div><small>Estimasi tercapai: <b>${c.est}</b></small></div>
  <div class="card"><div class="row"><div><div class="mu">Pemasukan ${MN[S.m]}</div><b class="pos">${rp(c.inc)}</b></div>
  <div><div class="mu">Pengeluaran</div><b class="neg">${rp(c.exp)}</b></div><div><div class="mu">Sisa</div><b>${rp(c.sur)}</b></div></div></div>
- <div class="card"><div class="row"><h2>Anggaran bulan ini</h2><button class="g" onclick="E=!E;go()">${E?"Selesai":"Atur"}</button></div>
+ <div class="card"><h2>Riwayat transaksi ${MN[S.m]}</h2>${l.length?l.map(t=>`<div class="item row"><div><b>${esc(t.d)}</b><div class="mu">${esc(t.acc)}${t.cat?" · "+esc(t.cat):""}</div></div>
+ <div style="text-align:right"><b class="${t.type=="in"?"pos":"neg"}">${t.type=="in"?"+":"-"}${rp(t.v)}</b><br><button class="g" onclick="del(${t.id})">Hapus</button></div></div>`).join(""):`<div class="mu" style="margin-top:8px">Belum ada transaksi. Ketuk tombol + untuk mencatat.</div>`}</div>`}
+function bud(c){
+ return `<div class="card"><div class="row"><h2>Anggaran ${MN[S.m]}</h2><button class="g" onclick="E=!E;go()">${E?"Selesai":"Atur"}</button></div>
+ ${c.rows.length?"":`<div class="mu">Belum ada kategori. Ketuk Atur untuk menambah.</div>`}
  ${c.rows.map((b,i)=>{const q=b.a?b.r/b.a*100:0;return `<div class="item"><div class="row"><b>${esc(b.n)}</b>${E?`<span><input type="number" inputmode="numeric" style="width:110px" value="${b.a}" onchange="S.bud[${i}].a=+this.value;go()"> <button class="g" onclick="S.bud.splice(${i},1);go()">Hapus</button></span>`:`<span class="mu">${rp(b.r)} / ${rp(b.a)}</span>`}</div>
  <div class="bar"><i class="${b.r>b.a?"ov":""}" style="width:${Math.min(100,q)}%"></i></div><div class="mu">Sisa anggaran ${rp(b.s)}</div></div>`}).join("")}
  ${E?`<div class="f2" style="margin-top:8px"><input id="bn" placeholder="Nama kategori"><input id="ba" type="number" inputmode="numeric" placeholder="Anggaran"></div><button class="w" onclick="addB()">Tambah kategori</button>`:""}
  <div class="item row"><b>Di luar anggaran</b><span class="${c.out?"neg":"mu"}">${rp(c.out)}</span></div>
  <div class="item row"><span class="mu">Rata-rata pengeluaran harian</span><b>${rp(c.exp/30)}</b></div></div>`}
-function txs(c){
- const l=[...c.mt].reverse();
- return `<div class="card"><h2>Transaksi ${MN[S.m]}</h2>${l.length?l.map(t=>`<div class="item row"><div><b>${esc(t.d)}</b><div class="mu">${esc(t.acc)}${t.cat?" · "+esc(t.cat):""}</div></div>
- <div style="text-align:right"><b class="${t.type=="in"?"pos":"neg"}">${t.type=="in"?"+":"-"}${rp(t.v)}</b><br><button class="g" onclick="del(${t.id})">Hapus</button></div></div>`).join(""):`<div class="mu" style="margin-top:8px">Belum ada transaksi. Ketuk Catat untuk menambah.</div>`}</div>
- <button class="fab" onclick="openM()">+ Catat</button>`}
-function aset(c){
+function harta(c){
  const gs=S.gold.g.toLocaleString("id-ID",{maximumFractionDigits:4});
- return `<div class="card"><div class="row"><h2>Liquid Assets</h2><b>${rp(c.liq)}</b></div><div class="sub">Uang yang bisa langsung dipakai: dompet, rekening, e-wallet.</div>
+ return `<div class="row" style="margin-bottom:12px"><div><div class="mu">Dompet aktif</div><b>${esc(S.name)}</b></div><button onclick="S=null;go()">Ganti dompet</button></div>
+ <div class="card"><div class="row"><h2>Liquid Assets</h2><b>${rp(c.liq)}</b></div><div class="sub">Uang yang bisa langsung dipakai: akun, rekening, e-wallet.</div>
  ${S.accs.map((a,i)=>`<div class="item f row"><div><b>${esc(a)}</b><div class="mu">Saldo awal <input type="number" inputmode="numeric" style="width:120px;padding:4px 8px" value="${S.open[a]||0}" onchange="S.open[S.accs[${i}]]=+this.value;go()"></div></div>
  <div style="text-align:right"><b>${rp(c.bal[a])}</b>${S.tx.some(t=>t.acc==a)||S.loans.some(l=>l.acc==a)?"":`<br><button class="g" onclick="S.accs.splice(${i},1);go()">Hapus</button>`}</div></div>`).join("")}
- <div class="f2" style="margin-top:8px"><input id="an" placeholder="Nama dompet baru"><button onclick="addA()">Tambah dompet</button></div></div>
+ <div class="f2" style="margin-top:8px"><input id="an" placeholder="Akun baru, mis. BRI"><button onclick="addA()">Tambah akun</button></div></div>
  <div class="card"><div class="row"><h2>Non Liquid Assets</h2><b>${rp(c.non)}</b></div><div class="sub">Aset yang perlu dijual dulu sebelum jadi uang: emas dan reksa dana.</div>
- <b>Emas</b><div class="val row"><span class="mu">Jumlah ${gs} g<br>Nilai jual (jumlah × harga jual)</span><b>${rp(c.gold)}</b></div>
- <div class="f2"><div><label>Jumlah emas (gram)</label><input type="number" step="any" value="${S.gold.g}" onchange="S.gold.g=+this.value;go()"></div><div><label>Harga jual per gram</label><input type="number" value="${S.gold.p}" onchange="S.gold.p=+this.value;go()"></div></div>
- <div class="mu" style="margin-top:4px">Harga jual per 0,001 g: ${rp(S.gold.p/1000)}</div>
+ <b>Emas</b><div class="val row"><span class="mu">Jumlah ${gs} g<br>Nilai jual</span><b>${rp(c.gold)}</b></div>
+ <div class="f2"><div><label>Jumlah emas (gram)</label><input type="number" step="any" value="${S.gold.g}" onchange="S.gold.g=+this.value;go()"></div><div><label>Harga jual per 0,001 g</label><input type="number" step="any" value="${S.gold.p}" onchange="S.gold.p=+this.value;go()"></div></div>
+ <div class="mu" style="margin-top:4px">Sama dengan ${rp(S.gold.p*1000)} per gram</div>
  <b style="display:block;margin-top:14px">Reksa Dana</b><div class="val row"><span class="mu">Nilai (unit × NAB)</span><b>${rp(c.rd)}</b></div>
  <div class="f2"><div><label>Jumlah unit</label><input type="number" step="any" value="${S.rd.u}" onchange="S.rd.u=+this.value;go()"></div><div><label>NAB sekarang</label><input type="number" step="any" value="${S.rd.nab}" onchange="S.rd.nab=+this.value;go()"></div></div></div>
  <div class="card"><h2>Target tabungan</h2><input type="number" value="${S.target}" onchange="S.target=+this.value;go()"></div>`}
@@ -115,19 +123,22 @@ function hutang(c){
  <div class="card"><h2>Pinjaman</h2><div class="sub">Uang kamu yang dipinjam orang lain.</div>${list(c.P,"Terima")}</div>
  <div class="card"><h2>Tambah catatan</h2><div class="f2"><div><label>Jenis</label><select id="lt"><option value="h">Hutang (aku pinjam)</option><option value="p">Pinjaman (aku meminjamkan)</option></select></div><div><label>Nama</label><input id="ln" placeholder="Nama"></div>
  <div><label>Jumlah</label><input id="lv" type="number" inputmode="numeric"></div><div><label>Jatuh tempo</label><input id="ld" placeholder="Contoh: Segera"></div></div>
- <label style="margin-top:10px">Dompet (hutang: uang masuk · pinjaman: uang keluar)</label><select id="la"><option value="">Jangan ubah saldo</option>${opts(S.accs)}</select>
+ <label style="margin-top:10px">Akun (hutang: uang masuk · pinjaman: uang keluar)</label><select id="la"><option value="">Jangan ubah saldo</option>${opts(S.accs)}</select>
  <button class="w" onclick="addL()">Simpan</button></div>`}
-const TABS=[["home","Ringkasan",home],["tx","Transaksi",txs],["as","Aset",aset],["hu","Hutang",hutang]];
-function go(){save();const c=C();
+const TABS=[["home","Home",home],["bud","Anggaran",bud],["hu","Hutang",hutang],["as","Harta",harta]];
+function go(){save();const pk=!S;
+ $("#ms").style.display=pk?"none":"";$("nav").style.display=pk?"none":"";$("#sub").textContent=pk?"":S.name;
+ if(pk){$("#app").innerHTML=pick();return}
+ const c=C();
  $("#ms").innerHTML=MN.map((n,i)=>`<option value="${i}" ${i==S.m?"selected":""}>${n} 2026</option>`).join("");
  $("#app").innerHTML=TABS.find(t=>t[0]==S.tab)[2](c);
- $("#nav").innerHTML=TABS.map(t=>`<button class="${t[0]==S.tab?"on":""}" onclick="S.tab='${t[0]}';go()">${t[1]}</button>`).join("")}
+ $("#nav").innerHTML=TABS.map((t,i)=>(i==2?`<button class="plus" onclick="openM()" aria-label="Catat transaksi">+</button>`:"")+`<button class="${t[0]==S.tab?"on":""}" onclick="S.tab='${t[0]}';go()">${t[1]}</button>`).join("")}
 const sheet=h=>$("#modal").innerHTML=`<div class="sheet" onclick="if(event.target==this)closeM()"><div>${h}</div></div>`;
 function closeM(){$("#modal").innerHTML=""}
 function openM(){const cats=[...S.bud.map(b=>b.n),"Di luar anggaran"];
  sheet(`<div class="tog"><button class="${T=="out"?"on":""}" onclick="T='out';openM()">Pengeluaran</button><button class="${T=="in"?"on":""}" onclick="T='in';openM()">Pemasukan</button></div>
  <div><label>Keterangan</label><input id="td" placeholder="Contoh: Makan siang"></div>
- <div class="f2"><div><label>Jumlah</label><input id="tv" type="number" inputmode="numeric"></div><div><label>Dompet</label><select id="ta">${opts(S.accs)}</select></div></div>
+ <div class="f2"><div><label>Jumlah</label><input id="tv" type="number" inputmode="numeric"></div><div><label>Akun</label><select id="ta">${opts(S.accs)}</select></div></div>
  ${T=="out"?`<div><label>Kategori anggaran</label><select id="tc">${opts(cats)}</select></div>`:""}<button onclick="addT()">Simpan</button>`)}
 function addT(){const v=+$("#tv").value;if(!v||v<=0){$("#tv").focus();return}
  S.tx.push({id:Date.now(),m:S.m,type:T,d:$("#td").value.trim()||(T=="in"?"Pemasukan":"Pengeluaran"),v,acc:$("#ta").value,cat:T=="out"?$("#tc").value:""});closeM();go()}
@@ -140,7 +151,7 @@ function addL(){const n=$("#ln").value.trim(),v=+$("#lv").value,t=$("#lt").value
 function delL(id){S.loans=S.loans.filter(l=>l.id!=id);S.tx=S.tx.filter(t=>t.lid!=id);go()}
 function openP(id){const l=S.loans.find(x=>x.id==id),h=l.t=="h";
  sheet(`<b>${h?"Bayar hutang":"Terima pembayaran"}: ${esc(l.n)}</b><div class="mu">Sisa ${rp(l.v-l.paid)}</div>
- <div class="f2"><div><label>Jumlah</label><input id="pv" type="number" inputmode="numeric" value="${l.v-l.paid}"></div><div><label>${h?"Dari dompet":"Ke dompet"}</label><select id="pa">${opts(S.accs,l.acc)}</select></div></div>
+ <div class="f2"><div><label>Jumlah</label><input id="pv" type="number" inputmode="numeric" value="${l.v-l.paid}"></div><div><label>${h?"Dari akun":"Ke akun"}</label><select id="pa">${opts(S.accs,l.acc)}</select></div></div>
  <button onclick="payL(${id})">Simpan</button>`)}
 function payL(id){const l=S.loans.find(x=>x.id==id),h=l.t=="h";let v=+$("#pv").value;if(!v||v<=0)return;v=Math.min(v,l.v-l.paid);l.paid+=v;
  S.tx.push({id:Date.now(),lid:id,ln:h?0:1,m:S.m,type:h?"out":"in",d:(h?"Bayar ":"Terima dari ")+l.n,v,acc:$("#pa").value,cat:h?"Bayar Cicilan":""});closeM();go()}
