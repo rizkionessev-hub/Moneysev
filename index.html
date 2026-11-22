@@ -155,7 +155,12 @@ header>div:first-child{display:flex;align-items:center;gap:10px}header>div:first
 .cam{position:absolute;right:0;bottom:0;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#fff;background:linear-gradient(180deg,#6a72ff,#3238d4);border:2px solid var(--bg);pointer-events:none}
 .wit{position:relative;overflow:hidden;margin:0 -14px;padding:10px 14px}
 .wit>*:not(.ov){position:relative;z-index:1}
-.wit.hp{text-shadow:0 1px 8px var(--bg)}
+.tl,.tl *{color:#fff!important;text-shadow:0 1px 5px rgba(0,0,0,.7)}
+.td,.td *{color:#0b0d1f!important;text-shadow:0 1px 5px rgba(255,255,255,.75)}
+.crb{position:relative;overflow:hidden;border-radius:18px;background:#000;touch-action:none;cursor:grab;-webkit-user-select:none;user-select:none}
+.sheet .crb img{position:absolute;max-width:none;width:auto;border-radius:0;pointer-events:none}
+.crm{position:absolute;inset:0;pointer-events:none;border-radius:50%;box-shadow:0 0 0 999px rgba(0,0,0,.55);border:2px solid rgba(255,255,255,.9)}
+#crz{padding:0;accent-color:var(--pr)}
 .ov{position:absolute;left:0;top:0;bottom:0;width:62%;height:100%;object-fit:cover;pointer-events:none;opacity:.92;-webkit-mask-image:linear-gradient(90deg,#000 30%,transparent);mask-image:linear-gradient(90deg,#000 30%,transparent)}
 .ms{margin-top:8px;padding:10px 12px;background:var(--field);border-radius:14px}.ms .row{padding:2px 0}.ms .row.t{border-top:1px solid var(--ln);margin-top:4px;padding-top:6px}
 </style></head><body>
@@ -308,7 +313,7 @@ function pick(){
  const cs=R.ds.map(d=>({d,c:C(d)})),tot=cs.reduce((s,x)=>s+x.c.aset,0);
  return `<div class="card hero"><small>Total uang keseluruhan</small><div class="big">${rp(tot)}</div><small>${R.ds.length} dompet</small></div>
  <div class="card"><h2>Pilih dompet</h2><div class="sub">Ketuk dompet untuk masuk.</div>
- ${cs.map((x,i)=>`<div class="item row wit${PFS[x.d.id]?" hp":""}" style="cursor:pointer" onclick="enter(${i})">${PFS[x.d.id]?`<img class="ov" src="${PFS[x.d.id]}" alt="">`:""}<div><b>${esc(x.d.name)}</b><div class="mu">Saldo ${rp(x.c.liq)}</div></div>
+ ${cs.map((x,i)=>`<div class="item row wit${PFS[x.d.id]?" hp":""}" style="cursor:pointer" onclick="enter(${i})">${PFS[x.d.id]?`<img class="ov" src="${PFS[x.d.id]}" alt="">`:""}<div class="${PFS[x.d.id]&&PFL[x.d.id]!=null?(PFL[x.d.id]>.55?"td":"tl"):""}"><b>${esc(x.d.name)}</b><div class="mu">Saldo ${rp(x.c.liq)}</div></div>
  <div style="text-align:right"><b>${rp(x.c.aset)}</b><div class="mu">total uang</div><button class="g" onclick="event.stopPropagation();askDel(${i})">Hapus</button></div></div>`).join("")||`<div class="mu">Belum ada dompet. Buat yang pertama di bawah.</div>`}
  <div class="f2" style="margin-top:10px"><input id="dn" placeholder="Contoh: Multimedia"><button onclick="addD()">Buat dompet</button></div></div>`}
 function enter(i){history.pushState({w:1},"");S=R.ds[i];S.tab="home";const n=new Date();S.m=n.getMonth();S.y=n.getFullYear();FL=FL0();E=0;AN=1;go()}
@@ -550,9 +555,9 @@ async function bkParse(buf){const sh=await XLU.read(buf),nn=v=>{if(typeof v=="nu
 
 /* ===== v5: perubahan baru ===== */
 const iv=i=>i.k=="gold"?i.u*1000*i.p:i.u*i.p;
-const PFS={};let PF=null;
-(async()=>{for(const D of R.ds)PFS[D.id]=await ph("get","profile-"+D.id);
- const old=await ph("get","profile");if(old){const f=R.ds[0];if(f&&!PFS[f.id]){PFS[f.id]=old;await ph("put","profile-"+f.id,old)}await ph("del","profile")}
+const PFS={},PFL={};let PF=null;
+(async()=>{for(const D of R.ds){PFS[D.id]=await ph("get","profile-"+D.id);if(PFS[D.id])PFL[D.id]=await lumOf(PFS[D.id])}
+ const old=await ph("get","profile");if(old){const f=R.ds[0];if(f&&!PFS[f.id]){PFS[f.id]=old;PFL[f.id]=await lumOf(old);await ph("put","profile-"+f.id,old)}await ph("del","profile")}
  if(R.prof)go()})();
 const DM=()=>{const n=new Date();return n.getFullYear()==S.y&&n.getMonth()==S.m?n.getDate():new Date(S.y,S.m+1,0).getDate()};
 function msum(x,cap){return `<div class="ms">${cap?`<div class="mu" style="font-size:12px;margin-bottom:2px">${cap}</div>`:""}<div class="row"><span class="mu">Pemasukan</span><b class="pos">${rp(x.i)}</b></div><div class="row"><span class="mu">Pengeluaran</span><b class="neg">${rp(x.o)}</b></div><div class="row t"><span class="mu">Sisa</span><b class="${x.i-x.o<0?"neg":""}">${rp(x.i-x.o)}</b></div></div>`}
@@ -581,8 +586,30 @@ function bk(){return`<div class="card"><h2>Backup &amp; data</h2><div class="sub
 function photoUI(){return`<div style="display:flex;justify-content:center;margin:4px 0 16px"><div class="avw"><button class="avb" onclick="pfMenu()" aria-label="Foto profil">${PF?`<img src="${PF}" alt="">`:`<svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>`}</button><span class="cam"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span></div></div>
 <input id="pfc" type="file" accept="image/*" capture="user" hidden onchange="pfSet(this.files[0]);this.value=''"><input id="pf" type="file" accept="image/*" hidden onchange="pfSet(this.files[0]);this.value=''">`}
 function pfMenu(){sheet(`<b>Foto dompet ${esc(S.name)}</b><button class="gl" onclick="closeM();$('#pfc').click()">Ambil foto</button><button class="gl" onclick="closeM();$('#pf').click()">Unggah dari galeri</button>${PF?`<button class="g" style="color:var(--ng)" onclick="closeM();pfDel()">Hapus foto</button>`:""}<button class="g" onclick="closeM()">Batal</button>`)}
-function pfSet(f){if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,800/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*k;c.height=im.height*k;c.getContext("2d").drawImage(im,0,0,c.width,c.height);PF=c.toDataURL("image/jpeg",.8);PFS[S.id]=PF;ph("put","profile-"+S.id,PF);go()};im.src=r.result};r.readAsDataURL(f)}
-function pfDel(){PF=null;delete PFS[S.id];ph("del","profile-"+S.id);go()}
+function lumOf(u){return new Promise(ok=>{const im=new Image();im.onload=()=>{try{const W=60,H=20,c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d"),k=Math.max(W/im.width,H/im.height),w=im.width*k,h=im.height*k;x.drawImage(im,(W-w)/2,(H-h)/2,w,h);const d=x.getImageData(0,0,W,H).data;let t=0,n=0;for(let j=0;j<H;j++)for(let i=0;i<W*.4;i++){const o=(j*W+i)*4;t+=(.2126*d[o]+.7152*d[o+1]+.0722*d[o+2])/255;n++}ok(t/n)}catch(e){ok(null)}};im.onerror=()=>ok(null);im.src=u})}
+let CR=null;
+function pfSet(f){if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,1600/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);const i2=new Image();i2.onload=()=>cropOpen(i2);i2.src=c.toDataURL("image/jpeg",.92)};im.src=r.result};r.readAsDataURL(f)}
+function cropOpen(im){const B=Math.min(300,innerWidth-64),mn=Math.max(B/im.width,B/im.height);
+ CR={im,B,mn,s:mn,x:(B-im.width*mn)/2,y:(B-im.height*mn)/2};
+ sheet(`<b>Sesuaikan foto</b><div class="mu">Geser untuk mengatur posisi. Cubit atau pakai slider untuk zoom.</div>
+ <div style="display:flex;justify-content:center"><div id="crb" class="crb" style="width:${B}px;height:${B}px"><img id="cri" alt="" draggable="false"><div class="crm"></div></div></div>
+ <input id="crz" type="range" min="1" max="4" step="0.01" value="1" aria-label="Zoom">
+ <div class="f2"><button class="gl" onclick="CR=null;closeM()">Batal</button><button onclick="cropSave()">Simpan</button></div>`);
+ const box=$("#crb"),img=$("#cri");img.src=im.src;const pts=new Map();let d0=0,s0=1;
+ cropDraw();
+ box.onpointerdown=e=>{try{box.setPointerCapture(e.pointerId)}catch(_){}pts.set(e.pointerId,[e.clientX,e.clientY]);if(pts.size==2){const[a,b]=[...pts.values()];d0=Math.hypot(a[0]-b[0],a[1]-b[1])||1;s0=CR.s}};
+ box.onpointermove=e=>{if(!CR||!pts.has(e.pointerId))return;const q=pts.get(e.pointerId);if(pts.size==1){CR.x+=e.clientX-q[0];CR.y+=e.clientY-q[1]}pts.set(e.pointerId,[e.clientX,e.clientY]);
+  if(pts.size==2){const[a,b]=[...pts.values()];cropZoom(s0*Math.hypot(a[0]-b[0],a[1]-b[1])/d0)}cropDraw()};
+ const up=e=>pts.delete(e.pointerId);box.onpointerup=up;box.onpointercancel=up;
+ box.onwheel=e=>{e.preventDefault();cropZoom(CR.s*(e.deltaY<0?1.08:.93));cropDraw()};
+ $("#crz").oninput=function(){cropZoom(CR.mn*(+this.value));cropDraw()}}
+function cropZoom(ns){const c=CR,mx=c.mn*4;ns=Math.max(c.mn,Math.min(mx,ns));const h=c.B/2,ix=(h-c.x)/c.s,iy=(h-c.y)/c.s;c.s=ns;c.x=h-ix*ns;c.y=h-iy*ns}
+function cropDraw(){const c=CR;if(!c)return;const w=c.im.width*c.s,h=c.im.height*c.s;c.x=Math.min(0,Math.max(c.B-w,c.x));c.y=Math.min(0,Math.max(c.B-h,c.y));
+ const i=$("#cri");if(!i)return;i.style.width=w+"px";i.style.height=h+"px";i.style.left=c.x+"px";i.style.top=c.y+"px";const z=$("#crz");if(z)z.value=c.s/c.mn}
+async function cropSave(){const c=CR;if(!c)return;CR=null;const cv=document.createElement("canvas");cv.width=cv.height=800;
+ cv.getContext("2d").drawImage(c.im,-c.x/c.s,-c.y/c.s,c.B/c.s,c.B/c.s,0,0,800,800);
+ const id=S.id,u=cv.toDataURL("image/jpeg",.85);PFS[id]=u;PF=u;PFL[id]=await lumOf(u);ph("put","profile-"+id,u);closeM();go()}
+function pfDel(){PF=null;delete PFS[S.id];delete PFL[S.id];ph("del","profile-"+S.id);go()}
 function confirmBox(t,s,y,fn){CBF=fn;sheet(`<b>${t}</b><div class="mu">${s}</div><div class="f2"><button class="gl" onclick="CBF=null;closeM()">Batal</button><button onclick="yes2()">${y}</button></div>`)}
 function yes2(){const f=CBF;CBF=null;closeM();if(f)f()}
 function askBack(){if(!S)return;confirmBox("Kembali ke menu dompet?","Kamu akan keluar dari dompet "+esc(S.name)+" dan kembali ke daftar dompet.","Ya, kembali",()=>{S=null;AN=1;go();history.back()})}
@@ -607,10 +634,13 @@ function tone(c,f,t,d,v,ty,o){o=o||{};const os=c.createOscillator(),g=c.createGa
 function burst(c,t,d,v,type,fq,q){const s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();s.buffer=nz(c,d);f.type=type;f.frequency.value=fq;f.Q.value=q||1;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(f);f.connect(g);g.connect(c.destination);s.start(t)}
 /* kaching: laci kasir "ka" + bel "ching" + koin */
 function kaching(){try{const c=ac(),t=c.currentTime+.02;
- burst(c,t,.09,.5,"bandpass",1800,.8);tone(c,110,t,.14,.5,"square",{f0:2.4,gl:.06,lp:900});
- [[0,1],[.11,.9]].forEach(([dt,v])=>[[1,.22],[2.76,.12],[5.4,.07],[8.9,.04]].forEach(([r,a])=>tone(c,2350*r,t+.09+dt,1.5-dt,a*v,"sine")));
- [0,1,2,3,4].forEach(i=>tone(c,3200+Math.random()*2200,t+.34+i*.055,.18,.05,"triangle"));
- try{navigator.vibrate&&navigator.vibrate(40)}catch(e){}}catch(e){}}
+ [0,.05,.1,.15,.2].forEach((d,i)=>{burst(c,t+d,.03,.3,"bandpass",2500+i*300,3);tone(c,900+i*140,t+d,.03,.12,"square",{lp:2500})});
+ const t1=t+.27,sr=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();sr.buffer=nz(c,.3);f.type="bandpass";f.Q.value=1.2;f.frequency.setValueAtTime(700,t1);f.frequency.exponentialRampToValueAtTime(4200,t1+.22);
+ g.gain.setValueAtTime(0,t1);g.gain.linearRampToValueAtTime(.55,t1+.05);g.gain.exponentialRampToValueAtTime(.0001,t1+.3);sr.connect(f);f.connect(g);g.connect(c.destination);sr.start(t1);
+ tone(c,70,t1+.2,.2,.7,"sine",{f0:2.5,gl:.07});burst(c,t1+.2,.07,.45,"lowpass",900);
+ const t2=t1+.24;[[0,1],[.13,.75]].forEach(([dt,v])=>{burst(c,t2+dt,.025,.4*v,"highpass",6000);[[1,.34],[2.4,.2],[3.9,.14],[5.6,.09],[7.9,.05]].forEach(([r,a],j)=>{tone(c,1760*r,t2+dt,1.9-dt-j*.2,a*v,"sine");if(j<2)tone(c,1760*r*1.004,t2+dt,1.9-dt,a*v*.6,"sine")})});
+ [0,1,2,3,4,5,6].forEach(i=>tone(c,3000+Math.random()*2500,t2+.35+i*.05,.16,.06,"triangle"));
+ try{navigator.vibrate&&navigator.vibrate([30,40,40])}catch(e){}}catch(e){}}
 /* fanfare kemenangan saat target penuh */
 function brass(c,f,t,d,v){[-6,6].forEach(dt=>{const o=c.createOscillator(),l=c.createBiquadFilter(),g=c.createGain();o.type="sawtooth";o.frequency.value=f;o.detune.value=dt;
  l.type="lowpass";l.frequency.setValueAtTime(500,t);l.frequency.linearRampToValueAtTime(3400,t+.07);l.frequency.exponentialRampToValueAtTime(1400,t+d);
