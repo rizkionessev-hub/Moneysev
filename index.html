@@ -161,6 +161,8 @@ header>div:first-child{display:flex;align-items:center;gap:10px}header>div:first
 .sheet .crb img{position:absolute;max-width:none;width:auto;border-radius:0;pointer-events:none}
 .crm{position:absolute;inset:0;pointer-events:none;border-radius:50%;box-shadow:0 0 0 999px rgba(0,0,0,.55);border:2px solid rgba(255,255,255,.9)}
 #crz{padding:0;accent-color:var(--pr)}
+#mv{z-index:8;padding:12px 16px 110px}
+.bub{position:fixed;right:18px;bottom:calc(24px + env(safe-area-inset-bottom,0px));width:60px;height:60px;border-radius:50%;padding:0;display:grid;place-items:center;z-index:3;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 22px rgba(50,56,212,.45)}
 .ov{position:absolute;left:0;top:0;bottom:0;width:62%;height:100%;object-fit:cover;pointer-events:none;opacity:.92;-webkit-mask-image:linear-gradient(90deg,#000 30%,transparent);mask-image:linear-gradient(90deg,#000 30%,transparent)}
 .ms{margin-top:8px;padding:10px 12px;background:var(--field);border-radius:14px}.ms .row{padding:2px 0}.ms .row.t{border-top:1px solid var(--ln);margin-top:4px;padding-top:6px}
 </style></head><body>
@@ -173,6 +175,7 @@ header>div:first-child{display:flex;align-items:center;gap:10px}header>div:first
 <nav id="nav"></nav>
 <div id="modal"></div>
 <div id="srch" class="scr" hidden><div class="sbar"><input id="sq" type="search" placeholder="Cari riwayat: nama, kategori, akun, nominal..." oninput="renderSR()" autocomplete="off"><button class="g" onclick="closeSearch()">Tutup</button></div><div id="sres"></div></div>
+<div id="mv" class="scr" hidden></div>
 <div id="ob" class="scr" hidden></div>
 <div id="lock" class="scr" hidden></div>
 <div id="splash"><div class="sp-in">
@@ -198,7 +201,7 @@ const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const fmt=ts=>new Date(ts).toLocaleString("id-ID",{weekday:"short",day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}).replace(/(\d)\.(\d)/,"$1:$2");
 const stamp=ts=>{const d=new Date(ts);return{ts,m:d.getMonth(),y:d.getFullYear()}};
 const mk=n=>{const d=new Date();return{id:Date.now(),name:n,m:d.getMonth(),y:d.getFullYear(),tab:"home",target:5000000,goal:"",accs:["Cash"],open:{},bud:[],invs:[{id:1,k:"gold",n:"Emas",u:0,p:2224}],loans:[],tx:[]}};
-let R=null,S=null,T="out",E=0,AN=1,PH=null,FXS=null,SR=0;
+let R=null,S=null,T="out",E=0,AN=1,PH=null,FXS=null,SR=0,MV=null,NP=[],ET="out",EPD=0;
 try{R=JSON.parse(localStorage.getItem(KEY))}catch(e){}
 if(!R){R={ds:[]};try{const o=JSON.parse(localStorage.getItem("moneysev-v1"));
  if(o&&o.accs){o.name="Utama";o.id=1;o.tab="home";if(o.gold&&o.gold.p>100000)o.gold.p/=1000;delete o.demo;R.ds.push(o)}}catch(e){}}
@@ -464,7 +467,7 @@ function obNext(){const n=$("#on").value.trim(),b=$("#ob2").value,g=$("#og").val
   pinPad({title:"Ulangi PIN",sub:"Masukkan PIN yang sama",alt:{t:"Mulai lagi",f:first},cb:async q=>{if(q!==p)return"PIN tidak sama, coba lagi";await obDone(p)}})}});first()}
 async function obDone(pin){const s=salt();R.prof={name:OB.name,birth:OB.birth,pin:{s,h:await hp(pin,s)}};
  let d=R.ds[0];if(!d){d=mk("Utama");R.ds.push(d)}d.goal=OB.goal;d.target=+OB.target;d.done=0;save();
- closePad();$("#ob").hidden=true;$("#ob").innerHTML="";if(R.ds.length==1)enter(0);else go();toast("Selamat datang, "+R.prof.name+"!")}
+ closePad();$("#ob").hidden=true;$("#ob").innerHTML="";go();toast("Selamat datang, "+R.prof.name+"!")}
 
 /* ---------- splash & mulai ---------- */
 function endSplash(){const sp=$("#splash");if(!sp||sp.dataset.x)return;sp.dataset.x=1;sp.classList.add("out");setTimeout(()=>sp.remove(),650);
@@ -560,16 +563,16 @@ const PFS={},PFL={};let PF=null;
  const old=await ph("get","profile");if(old){const f=R.ds[0];if(f&&!PFS[f.id]){PFS[f.id]=old;PFL[f.id]=await lumOf(old);await ph("put","profile-"+f.id,old)}await ph("del","profile")}
  if(R.prof)go()})();
 const DM=()=>{const n=new Date();return n.getFullYear()==S.y&&n.getMonth()==S.m?n.getDate():new Date(S.y,S.m+1,0).getDate()};
-function msum(x,cap){return `<div class="ms">${cap?`<div class="mu" style="font-size:12px;margin-bottom:2px">${cap}</div>`:""}<div class="row"><span class="mu">Pemasukan</span><b class="pos">${rp(x.i)}</b></div><div class="row"><span class="mu">Pengeluaran</span><b class="neg">${rp(x.o)}</b></div><div class="row t"><span class="mu">Sisa</span><b class="${x.i-x.o<0?"neg":""}">${rp(x.i-x.o)}</b></div></div>`}
+function msum(x,cap,lk){return `<div class="ms"${lk?` style="cursor:pointer" onclick="openMonth(${x.y},${x.m})"`:""}>${cap?`<div class="mu" style="font-size:12px;margin-bottom:2px">${cap}</div>`:""}<div class="row"><span class="mu">Pemasukan</span><b class="pos">${rp(x.i)}</b></div><div class="row"><span class="mu">Pengeluaran</span><b class="neg">${rp(x.o)}</b></div><div class="row t"><span class="mu">Sisa</span><b class="${x.i-x.o<0?"neg":""}">${rp(x.i-x.o)}</b></div>${lk?`<div class="mu" style="text-align:right;font-size:12px;margin-top:6px">Lihat riwayat bulan ini ›</div>`:""}</div>`}
 function hist(l){if(FL.sort!="new"&&FL.sort!="old")return{main:l.map(txRow).join(""),rest:""};
  const G=[],idx={},nw=new Date(),ck=nw.getFullYear()+"-"+nw.getMonth();
  l.forEach(t=>{const q=yr(t)+"-"+t.m;let x=idx[q];if(!x){x=idx[q]={q,m:t.m,y:yr(t),a:[],i:0,o:0};G.push(x)}x.a.push(t);if(!t.ln)t.type=="in"?x.i+=t.v:x.o+=t.v});
  let main="",rest="";
- G.forEach(x=>{if(x.q==ck)main+=x.a.map(txRow).join("")+msum(x,MN[x.m]+" "+x.y);
-  else rest+=`<div class="card"><h2>${MN[x.m]} ${x.y}</h2>${x.a.map(txRow).join("")}${msum(x)}</div>`});
+ G.forEach(x=>{if(x.q==ck)main+=x.a.map(txRow).join("")+msum(x,MN[x.m]+" "+x.y,1);
+  else rest+=`<div class="card"><h2>${MN[x.m]} ${x.y}</h2>${x.a.map(txRow).join("")}${msum(x,"",1)}</div>`});
  return{main,rest}}
 function openD(id){const t=S.tx.find(x=>x.id==id);if(!t)return;const r=(a,b)=>b?`<div class="row"><span class="mu">${a}</span><b style="text-align:right">${esc(b)}</b></div>`:"";
- sheet(`<div class="row"><b>Rincian transaksi</b><button class="g" onclick="closeM()">Tutup</button></div>${t.ph?`<img id="dpi" alt="Foto nota" style="max-height:65vh;object-fit:contain;background:var(--field)">`:""}<div class="big ${t.type=="in"?"pos":"neg"}">${t.type=="in"?"+":"-"}${rp(t.v)}</div>${r("Keterangan",t.d)}${r("Jenis",t.type=="in"?"Pemasukan":"Pengeluaran")}${r("Tanggal",fmt(tsOf(t)))}${r("Akun",t.acc)}${r("Kategori",t.cat)}${r("Catatan",t.note)}<button style="background:var(--ng)" onclick="del(${t.id})">Hapus transaksi</button>`);
+ sheet(`<div class="row"><b>Rincian transaksi</b><button class="g" onclick="closeM()">Tutup</button></div>${t.ph?`<img id="dpi" alt="Foto nota" style="max-height:65vh;object-fit:contain;background:var(--field)">`:""}<div class="big ${t.type=="in"?"pos":"neg"}">${t.type=="in"?"+":"-"}${rp(t.v)}</div>${r("Keterangan",t.d)}${r("Jenis",t.type=="in"?"Pemasukan":"Pengeluaran")}${r("Tanggal",fmt(tsOf(t)))}${r("Akun",t.acc)}${r("Kategori",t.cat)}${r("Catatan",t.note)}${t.ln?`<div class="mu">Transaksi hutang/pinjaman diubah lewat menu Hutang.</div>`:`<button class="gl" onclick="openE(${t.id})">Edit transaksi</button>`}<button class="gl" onclick="printTx(${t.id})">Cetak nota</button><button style="background:var(--ng)" onclick="del(${t.id})">Hapus transaksi</button>`);
  if(t.ph)ph("get",S.id+"-"+id).then(u=>{const e=$("#dpi");if(e&&u)e.src=u})}
 function go(){save();const pk=!S,fx=FXS,tab=pk?"":S.tab;FXS=null;document.body.classList.toggle("pk",pk);{PF=pk?null:(PFS[S.id]||null);const av=$("#av"),sh=!!PF&&!pk&&tab!="as";av.hidden=!sh;if(sh&&av._p!==PF){av.src=PF;av._p=PF}}
  $("#ctl").style.display=$("nav").style.display=$("#plus").style.display=pk?"none":"";$("#sub").textContent=pk?"":(R.prof?R.prof.name+" · ":"")+S.name;
@@ -579,7 +582,7 @@ function go(){save();const pk=!S,fx=FXS,tab=pk?"":S.tab;FXS=null;document.body.c
   let o="";for(let y=ly,m=lm;y>ey||y==ey&&m>=em;){o+=`<option value="${y}-${m}" ${y==S.y&&m==S.m?"selected":""}>${MN[m]} ${y}</option>`;if(--m<0){m=11;y--}}
   $("#ms").innerHTML=o;$("#nav").innerHTML=TABS.map(t=>`<button class="${t[0]==S.tab?"on":""}" onclick="S.tab='${t[0]}';AN=1;go()">${t[1]}</button>`).join("")}
  const a=$("#app");a.classList.remove("enter");a.innerHTML=pk?pick():TABS.find(t=>t[0]==S.tab)[2](C());
- if(AN){void a.offsetWidth;a.classList.add("enter");AN=0}if(fx&&!pk)runFX(fx);if(SR&&!pk)renderSR();goalCheck(fx?2900:450);fab()}
+ if(AN){void a.offsetWidth;a.classList.add("enter");AN=0}if(fx&&!pk)runFX(fx);if(SR&&!pk)renderSR();if(MV&&!pk)renderMV();goalCheck(fx?2900:450);fab()}
 function rmI(i){ask(`Hapus investasi ${esc(S.invs[i].n)}?`,()=>{S.invs.splice(i,1);go()})}
 function addI(){const n=$("#in").value.trim(),k=$("#ik").value;if(!n)return;S.invs.push({id:Date.now(),k,n,u:0,p:k=="gold"?2224:1});go()}
 function bk(){return`<div class="card"><h2>Backup &amp; data</h2><div class="sub">Format Excel (.xlsx) sama seperti file Keuanganku. Bisa dibuka di Google Sheets lewat File → Impor. Foto nota tidak ikut di backup.</div><div class="f2"><button class="gl" onclick="bkOut()">Backup ke xlsx</button><button class="gl" onclick="$('#bkf').click()">Pulihkan dari xlsx</button></div><input id="bkf" type="file" accept=".xlsx" hidden onchange="bkIn(this.files[0]);this.value=''"><button class="w" style="background:var(--ng)" onclick="wipeAsk()">Hapus semua data</button></div>`}
@@ -612,11 +615,11 @@ async function cropSave(){const c=CR;if(!c)return;CR=null;const cv=document.crea
 function pfDel(){PF=null;delete PFS[S.id];delete PFL[S.id];ph("del","profile-"+S.id);go()}
 function confirmBox(t,s,y,fn){CBF=fn;sheet(`<b>${t}</b><div class="mu">${s}</div><div class="f2"><button class="gl" onclick="CBF=null;closeM()">Batal</button><button onclick="yes2()">${y}</button></div>`)}
 function yes2(){const f=CBF;CBF=null;closeM();if(f)f()}
-function askBack(){if(!S)return;confirmBox("Kembali ke menu dompet?","Kamu akan keluar dari dompet "+esc(S.name)+" dan kembali ke daftar dompet.","Ya, kembali",()=>{S=null;AN=1;go();history.back()})}
+function askBack(){if(!S)return;confirmBox("Kembali ke menu dompet?","Kamu akan keluar dari dompet "+esc(S.name)+" dan kembali ke daftar dompet.","Ya, kembali",()=>{closeMonth();S=null;AN=1;go();history.back()})}
 history.replaceState({b:1},"");
-addEventListener("popstate",()=>{if(!S)return;history.pushState({w:1},"");if(PD||!$("#lock").hidden)return;if($("#modal").innerHTML)closeM();else if(SR)closeSearch();else askBack()});
+addEventListener("popstate",()=>{if(!S)return;history.pushState({w:1},"");if(PD||!$("#lock").hidden)return;if($("#modal").innerHTML)closeM();else if(MV)closeMonth();else if(SR)closeSearch();else askBack()});
 (()=>{let y0=null,d=0;const el=document.createElement("div");el.id="ptr";document.body.appendChild(el);
- const bl=()=>PD||!$("#lock").hidden||!$("#ob").hidden||$("#splash")||$("#modal").innerHTML||SR;
+ const bl=()=>PD||!$("#lock").hidden||!$("#ob").hidden||$("#splash")||$("#modal").innerHTML||SR||MV;
  addEventListener("touchstart",e=>{y0=!bl()&&scrollY<=0?e.touches[0].clientY:null;d=0},{passive:true});
  addEventListener("touchmove",e=>{if(y0==null)return;d=e.touches[0].clientY-y0;if(scrollY>0||d<=0){el.style.transform="translate(-50%,-60px)";return}el.textContent=d>110?"Lepas untuk refresh":"Tarik untuk refresh";el.style.transform=`translate(-50%,${Math.min(d*.45,56)}px)`},{passive:true});
  addEventListener("touchend",()=>{el.style.transform="translate(-50%,-60px)";if(y0!=null&&d>110)confirmBox("Refresh dompet?","Apakah Anda yakin ingin me-refresh dompet Anda? Aplikasi akan dimuat ulang.","Ya, refresh",()=>location.reload());y0=null;d=0},{passive:true})})();
@@ -652,6 +655,78 @@ function victory(){try{const c=ac(),t=c.currentTime+.03,N={G4:392,C5:523.25,D5:5
  burst(c,T,2.4,.28,"highpass",6000);tone(c,65.4,T,2.2,.5,"sine");
  [0,1,2,3,4,5,6,7,8].forEach(i=>tone(c,1568*Math.pow(1.122,i%5)*(i>4?1.5:1),T+.1+i*.07,.9,.05,"sine"));
  setTimeout(()=>{try{sparkle()}catch(e){}},1700)}catch(e){}}
+
+/* ===== v9: edit transaksi, riwayat per bulan, cetak nota ===== */
+function openE(id,keep){const t=S.tx.find(x=>x.id==id);if(!t||t.ln)return;if(!keep){ET=t.type;PH=null;EPD=0}
+ const g=(i,d)=>$(i)?$(i).value:d,d0=g("#td",t.d),v0=g("#tv",t.v),n0=g("#tn",t.note||""),a0=g("#ta",t.acc),c0=g("#tc",t.cat),w0=g("#tw",lt(new Date(tsOf(t))));
+ const cats=[...S.bud.map(b=>b.n),"Di luar anggaran"];if(t.cat&&!cats.includes(t.cat))cats.push(t.cat);const acs=S.accs.includes(a0)?S.accs:[...S.accs,a0];
+ sheet(`<b>Edit transaksi</b><div class="tog"><button class="${ET=="out"?"on":""}" onclick="ET='out';openE(${id},1)">Pengeluaran</button><button class="${ET=="in"?"on":""}" onclick="ET='in';openE(${id},1)">Pemasukan</button></div>
+ <div><label>Keterangan</label><input id="td" value="${esc(d0)}"></div>
+ <div class="f2"><div><label>Jumlah</label><input id="tv" type="number" inputmode="numeric" value="${esc(v0)}"></div><div><label>Akun</label><select id="ta">${opts(acs,a0)}</select></div></div>
+ ${ET=="out"?`<div><label>Kategori anggaran</label><select id="tc">${opts(cats,c0)}</select></div>`:""}
+ <div><label>Tanggal &amp; jam</label><input id="tw" type="datetime-local" value="${esc(w0)}"></div>
+ <div><label>Catatan</label><input id="tn" value="${esc(n0)}" placeholder="Opsional"></div>
+ <div><label>Foto nota</label>${t.ph&&!EPD&&!PH?`<div class="mu" style="margin-bottom:6px">Foto nota tersimpan. Pilih foto baru untuk mengganti.</div>`:""}<div class="f2"><button class="gl" onclick="$('#fc').click()">Ambil foto</button><button class="gl" onclick="$('#fg').click()">Dari galeri</button></div>
+ <input id="fc" type="file" accept="image/*" capture="environment" hidden onchange="pickPh(this.files[0])"><input id="fg" type="file" accept="image/*" hidden onchange="pickPh(this.files[0])">
+ <div id="pv2" style="margin-top:8px">${PH?`<img src="${PH}">`:""}</div>${t.ph&&!EPD&&!PH?`<button class="g" onclick="EPD=1;openE(${id},1)">Hapus foto nota</button>`:""}${EPD&&!PH?`<div class="mu">Foto nota akan dihapus saat disimpan.</div>`:""}</div>
+ <div class="f2"><button class="gl" onclick="closeM()">Batal</button><button onclick="saveE(${id})">Simpan perubahan</button></div>`)}
+async function saveE(id){const t=S.tx.find(x=>x.id==id);if(!t)return;const v=+$("#tv").value;if(!v||v<=0){$("#tv").focus();return}
+ const dt=new Date($("#tw").value),ts=isNaN(dt)?tsOf(t):dt.getTime(),s=snap();
+ Object.assign(t,stamp(ts),{type:ET,d:$("#td").value.trim()||(ET=="in"?"Pemasukan":"Pengeluaran"),v,acc:$("#ta").value,cat:ET=="out"?$("#tc").value:"",note:$("#tn").value.trim()});
+ if(PH){await ph("put",S.id+"-"+id,PH);t.ph=1}else if(EPD&&t.ph){await ph("del",S.id+"-"+id);delete t.ph}
+ closeM();FXS=s;toast("Transaksi diperbarui");go()}
+
+function openMonth(y,m){MV={y,m};const e=$("#mv");e.hidden=false;e.scrollTop=0;renderMV()}
+function closeMonth(){MV=null;const e=$("#mv");e.hidden=true;e.innerHTML=""}
+const monthTx=()=>S.tx.filter(t=>t.m==MV.m&&yr(t)==MV.y);
+function renderMV(){if(!MV||!S)return;const l=monthTx().sort((a,b)=>tsOf(b)-tsOf(a)),x={y:MV.y,m:MV.m,i:0,o:0};l.forEach(t=>{if(!t.ln)t.type=="in"?x.i+=t.v:x.o+=t.v});
+ $("#mv").innerHTML=`<div class="sbar"><button class="g" onclick="closeMonth()">&#8249; Kembali</button><b style="flex:1;text-align:center;margin-right:64px">${MN[MV.m]} ${MV.y}</b></div>
+ <div style="max-width:480px;margin:0 auto"><div class="card"><div class="mu" style="font-size:12px">${esc(S.name)} · ${l.length} transaksi</div>${msum(x)}</div>
+ <div class="card"><h2>Riwayat ${MN[MV.m]} ${MV.y}</h2>${l.length?l.map(txRow).join(""):`<div class="mu" style="margin-top:6px">Tidak ada transaksi di bulan ini.</div>`}</div></div>
+ ${l.length?`<button class="bub" onclick="printMonth()" aria-label="Cetak semua transaksi bulan ini"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-2.2-1.5L13.6 21 12 19.5 10.4 21l-2.2-1.5L6 21z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></button>`:""}`}
+
+/* ---------- nota (gambar) ---------- */
+const NF="'Courier New',ui-monospace,monospace",dS=ts=>{const d=new Date(ts);return`${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`};
+function wrapT(x,txt,w,max){const o=[];let l="";for(let wd of String(txt).split(/\s+/)){while(x.measureText(wd).width>w){let k=wd.length;while(k>1&&x.measureText(wd.slice(0,k)).width>w)k--;if(l){o.push(l);l=""}o.push(wd.slice(0,k));wd=wd.slice(k)}
+ const q=l?l+" "+wd:wd;if(l&&x.measureText(q).width>w){o.push(l);l=wd}else l=q}if(l)o.push(l);if(o.length>max){o.length=max;o[max-1]=o[max-1].replace(/.{0,2}$/,"…")}return o}
+function drawNota(o){const W=420,PX=22,L=PX+18,Rr=W-PX-18,PW=W-PX*2,sc=2;
+ const run=(x,dr)=>{let y=60;const tx=(t,px,py,f,al,c)=>{x.font=f;if(!dr)return;x.textAlign=al||"left";x.fillStyle=c||"#1b1b1b";x.fillText(t,px,py)},
+  dash=(d)=>{if(dr){x.strokeStyle="#6b6b6b";x.lineWidth=1.2;x.setLineDash(d?[]:[5,4]);x.beginPath();x.moveTo(L,y);x.lineTo(Rr,y);x.stroke();if(d){x.beginPath();x.moveTo(L,y+3);x.lineTo(Rr,y+3);x.stroke()}x.setLineDash([])}y+=d?12:10};
+  tx("MONEYSEV",W/2,y,"800 27px "+NF,"center");y+=22;tx(o.title,W/2,y,"700 12px "+NF,"center");y+=16;
+  tx(o.sub,W/2,y,"12px "+NF,"center","#444");y+=20;
+  tx("Dompet : "+o.wallet,L,y,"12px "+NF);y+=15;if(o.name){tx("Nama   : "+o.name,L,y,"12px "+NF);y+=15}
+  dash();y+=6;
+  o.rows.forEach(r=>{const am=(r.type=="in"?"+":"-")+rp(r.v);x.font="700 13px "+NF;const aw=x.measureText(am).width,ls=wrapT(x,r.d,Rr-L-aw-10,2);
+   ls.forEach((q,i)=>{tx(q,L,y,"700 13px "+NF);if(i==0)tx(am,Rr,y,"700 13px "+NF,"right");y+=16});
+   x.font="11px "+NF;tx(dS(tsOf(r)),L,y,"11px "+NF,"left","#555");y+=14;
+   tx(r.acc+(r.cat?" · "+r.cat:""),L,y,"11px "+NF,"left","#555");y+=14;
+   if(o.single){tx("Jenis: "+(r.type=="in"?"Pemasukan":"Pengeluaran"),L,y,"11px "+NF,"left","#555");y+=14}
+   if(r.note){x.font="11px "+NF;wrapT(x,"Cat: "+r.note,Rr-L,3).forEach(q=>{tx(q,L,y,"11px "+NF,"left","#555");y+=14})}
+   y+=8});
+  if(o.single){const r=o.rows[0];dash(1);tx("TOTAL",L,y+6,"800 15px "+NF);tx((r.type=="in"?"+":"-")+rp(r.v),Rr,y+6,"800 15px "+NF,"right");y+=26}
+  else if(o.tot){dash();y+=8;tx("Pemasukan",L,y,"13px "+NF);tx(rp(o.tot.i),Rr,y,"13px "+NF,"right");y+=18;tx("Pengeluaran",L,y,"13px "+NF);tx(rp(o.tot.o),Rr,y,"13px "+NF,"right");y+=10;dash(1);y+=8;
+   tx("SISA",L,y,"800 15px "+NF);tx(rp(o.tot.i-o.tot.o),Rr,y,"800 15px "+NF,"right");y+=20}
+  y+=4;dash();y+=8;tx("Dicetak "+dS(Date.now()),W/2,y,"11px "+NF,"center","#555");y+=16;
+  if(o.pgs>1){tx("Halaman "+o.pg+" dari "+o.pgs,W/2,y,"11px "+NF,"center","#555");y+=16}
+  tx("*** Terima kasih ***",W/2,y+4,"700 12px "+NF,"center");y+=34;return y};
+ const sc0=document.createElement("canvas").getContext("2d"),H=run(sc0,false)+14;
+ const c=document.createElement("canvas");c.width=W*sc;c.height=Math.ceil(H*sc);const x=c.getContext("2d");x.scale(sc,sc);
+ x.fillStyle="#dfe3f1";x.fillRect(0,0,W,H);
+ const n=Math.round(PW/10),st=PW/n,t0=16,t1=24,b0=H-16,b1=H-24;
+ x.beginPath();x.moveTo(PX,t1);for(let i=0;i<n;i++){x.lineTo(PX+i*st+st/2,t0);x.lineTo(PX+(i+1)*st,t1)}x.lineTo(PX+PW,b1);for(let i=n;i>0;i--){x.lineTo(PX+i*st-st/2,b0);x.lineTo(PX+(i-1)*st,b1)}x.closePath();
+ x.shadowColor="rgba(40,50,110,.28)";x.shadowBlur=12;x.shadowOffsetY=3;x.fillStyle="#fffdf6";x.fill();x.shadowColor="transparent";
+ run(x,true);return c}
+async function makeNota(title,sub,rows,tot,fname,single){const per=28,ch=[];for(let i=0;i<rows.length;i+=per)ch.push(rows.slice(i,i+per));if(!ch.length)ch.push([]);
+ const out=[];for(let i=0;i<ch.length;i++){const cv=drawNota({title,sub,rows:ch[i],tot:i==ch.length-1?tot:null,pg:i+1,pgs:ch.length,wallet:S.name,name:R.prof?R.prof.name:"",single});
+  const b=await new Promise(r=>cv.toBlob(r,"image/png"));out.push({b,u:URL.createObjectURL(b),n:fname+(ch.length>1?"-"+(i+1):"")+".png"})}
+ NP=out;const sh=!!(navigator.canShare&&navigator.share);
+ sheet(`<div class="row"><b>Nota siap</b><button class="g" onclick="closeM()">Tutup</button></div>${out.map((p,i)=>`${out.length>1?`<div class="mu">Halaman ${i+1} dari ${out.length}</div>`:""}<img src="${p.u}" alt="Nota" style="max-height:55vh;object-fit:contain;background:#dfe3f1"><div class="${sh?"f2":""}"><button onclick="dlNota(${i})">Simpan gambar</button>${sh?`<button class="gl" onclick="shNota(${i})">Bagikan</button>`:""}</div>`).join("")}`)}
+function dlNota(i){const p=NP[i];if(!p)return;const a=document.createElement("a");a.href=p.u;a.download=p.n;document.body.appendChild(a);a.click();a.remove();toast("Gambar nota disimpan")}
+function shNota(i){const p=NP[i];if(!p)return;try{const f=new File([p.b],p.n,{type:"image/png"});if(navigator.canShare({files:[f]}))navigator.share({files:[f]}).catch(()=>{})}catch(e){}}
+const fnm=t=>String(t).replace(/[^\w-]+/g,"_").replace(/^_+|_+$/g,"").slice(0,40)||"nota";
+function printMonth(){if(!MV)return;const l=monthTx().sort((a,b)=>tsOf(a)-tsOf(b)),x={i:0,o:0};l.forEach(t=>{if(!t.ln)t.type=="in"?x.i+=t.v:x.o+=t.v});
+ makeNota("NOTA RIWAYAT TRANSAKSI",MN[MV.m]+" "+MV.y,l,x,"Nota-Moneysev-"+fnm(S.name)+"-"+MN[MV.m]+"-"+MV.y)}
+function printTx(id){const t=S.tx.find(x=>x.id==id);if(!t)return;makeNota("NOTA TRANSAKSI",dS(tsOf(t)),[t],null,"Nota-"+fnm(t.d)+"-"+ymd(new Date(tsOf(t))),1)}
 function wipeAsk(){sheet(`<b>Hapus semua data?</b><div class="mu">Semua dompet, transaksi, foto, dan PIN di HP ini dihapus permanen, lalu aplikasi mulai dari kosong. Sebaiknya backup ke xlsx dulu.</div><button class="gl" onclick="closeM();bkOut()">Backup dulu</button><input id="wz" placeholder="Ketik HAPUS" autocomplete="off"><button style="background:var(--ng)" onclick="wipeAll()">Hapus semua data</button><button class="g" onclick="closeM()">Batal</button>`)}
 async function wipeAll(){if($("#wz").value.trim().toUpperCase()!="HAPUS")return;try{localStorage.removeItem(KEY);localStorage.removeItem("moneysev-v1");indexedDB.deleteDatabase("moneysev-img");const k=await caches.keys();await Promise.all(k.map(x=>caches.delete(x)));const r=await navigator.serviceWorker.getRegistrations();await Promise.all(r.map(x=>x.unregister()))}catch(e){}location.reload()}
 function bkOut(){try{const b=bkBuild(S),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="Moneysev-"+S.name.replace(/[^\w-]+/g,"_")+"-"+ymd(new Date())+".xlsx";document.body.appendChild(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(a.href)},4000);toast("Backup dibuat")}catch(e){toast("Backup gagal")}}
