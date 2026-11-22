@@ -617,7 +617,11 @@ function confirmBox(t,s,y,fn){CBF=fn;sheet(`<b>${t}</b><div class="mu">${s}</div
 function yes2(){const f=CBF;CBF=null;closeM();if(f)f()}
 function askBack(){if(!S)return;confirmBox("Kembali ke menu dompet?","Kamu akan keluar dari dompet "+esc(S.name)+" dan kembali ke daftar dompet.","Ya, kembali",()=>{closeMonth();S=null;AN=1;go();history.back()})}
 history.replaceState({b:1},"");
-addEventListener("popstate",()=>{if(!S)return;history.pushState({w:1},"");if(PD||!$("#lock").hidden)return;if($("#modal").innerHTML)closeM();else if(MV)closeMonth();else if(SR)closeSearch();else askBack()});
+addEventListener("popstate",()=>{if(!S)return;const keep=()=>history.pushState(MV?{mv:1}:{w:1},"");
+ if(PD||!$("#lock").hidden){keep();return}
+ if($("#modal").innerHTML){keep();closeM()}
+ else if(MV)closeMonth();
+ else{history.pushState({w:1},"");if(SR)closeSearch();else askBack()}});
 (()=>{let y0=null,d=0;const el=document.createElement("div");el.id="ptr";document.body.appendChild(el);
  const bl=()=>PD||!$("#lock").hidden||!$("#ob").hidden||$("#splash")||$("#modal").innerHTML||SR||MV;
  addEventListener("touchstart",e=>{y0=!bl()&&scrollY<=0?e.touches[0].clientY:null;d=0},{passive:true});
@@ -676,11 +680,11 @@ async function saveE(id){const t=S.tx.find(x=>x.id==id);if(!t)return;const v=+$(
  if(PH){await ph("put",S.id+"-"+id,PH);t.ph=1}else if(EPD&&t.ph){await ph("del",S.id+"-"+id);delete t.ph}
  closeM();FXS=s;toast("Transaksi diperbarui");go()}
 
-function openMonth(y,m){MV={y,m};const e=$("#mv");e.hidden=false;e.scrollTop=0;renderMV()}
+function openMonth(y,m){history.pushState({mv:1},"");MV={y,m};const e=$("#mv");e.hidden=false;e.scrollTop=0;renderMV()}
 function closeMonth(){MV=null;const e=$("#mv");e.hidden=true;e.innerHTML=""}
 const monthTx=()=>S.tx.filter(t=>t.m==MV.m&&yr(t)==MV.y);
 function renderMV(){if(!MV||!S)return;const l=monthTx().sort((a,b)=>tsOf(b)-tsOf(a)),x={y:MV.y,m:MV.m,i:0,o:0};l.forEach(t=>{if(!t.ln)t.type=="in"?x.i+=t.v:x.o+=t.v});
- $("#mv").innerHTML=`<div class="sbar"><button class="g" onclick="closeMonth()">&#8249; Kembali</button><b style="flex:1;text-align:center;margin-right:64px">${MN[MV.m]} ${MV.y}</b></div>
+ $("#mv").innerHTML=`<div class="sbar"><button class="g" onclick="history.back()">&#8249; Kembali</button><b style="flex:1;text-align:center;margin-right:64px">${MN[MV.m]} ${MV.y}</b></div>
  <div style="max-width:480px;margin:0 auto"><div class="card"><div class="mu" style="font-size:12px">${esc(S.name)} · ${l.length} transaksi</div>${msum(x)}</div>
  <div class="card"><h2>Riwayat ${MN[MV.m]} ${MV.y}</h2>${l.length?l.map(txRow).join(""):`<div class="mu" style="margin-top:6px">Tidak ada transaksi di bulan ini.</div>`}</div></div>
  ${l.length?`<button class="bub" onclick="printMonth()" aria-label="Cetak semua transaksi bulan ini"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-2.2-1.5L13.6 21 12 19.5 10.4 21l-2.2-1.5L6 21z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></button>`:""}`}
@@ -690,7 +694,7 @@ const NF="'Courier New',ui-monospace,monospace",dS=ts=>{const d=new Date(ts);ret
 function wrapT(x,txt,w,max){const o=[];let l="";for(let wd of String(txt).split(/\s+/)){while(x.measureText(wd).width>w){let k=wd.length;while(k>1&&x.measureText(wd.slice(0,k)).width>w)k--;if(l){o.push(l);l=""}o.push(wd.slice(0,k));wd=wd.slice(k)}
  const q=l?l+" "+wd:wd;if(l&&x.measureText(q).width>w){o.push(l);l=wd}else l=q}if(l)o.push(l);if(o.length>max){o.length=max;o[max-1]=o[max-1].replace(/.{0,2}$/,"…")}return o}
 function drawNota(o){const W=420,PX=22,L=PX+18,Rr=W-PX-18,PW=W-PX*2,sc=2;
- const run=(x,dr)=>{let y=60;const tx=(t,px,py,f,al,c)=>{x.font=f;if(!dr)return;x.textAlign=al||"left";x.fillStyle=c||"#1b1b1b";x.fillText(t,px,py)},
+ const run=(x,dr)=>{let y=40;const tx=(t,px,py,f,al,c)=>{x.font=f;if(!dr)return;x.textAlign=al||"left";x.fillStyle=c||"#1b1b1b";x.fillText(t,px,py)},
   dash=(d)=>{if(dr){x.strokeStyle="#6b6b6b";x.lineWidth=1.2;x.setLineDash(d?[]:[5,4]);x.beginPath();x.moveTo(L,y);x.lineTo(Rr,y);x.stroke();if(d){x.beginPath();x.moveTo(L,y+3);x.lineTo(Rr,y+3);x.stroke()}x.setLineDash([])}y+=d?12:10};
   tx("MONEYSEV",W/2,y,"800 27px "+NF,"center");y+=22;tx(o.title,W/2,y,"700 12px "+NF,"center");y+=16;
   tx(o.sub,W/2,y,"12px "+NF,"center","#444");y+=20;
@@ -709,18 +713,15 @@ function drawNota(o){const W=420,PX=22,L=PX+18,Rr=W-PX-18,PW=W-PX*2,sc=2;
   y+=4;dash();y+=8;tx("Dicetak "+dS(Date.now()),W/2,y,"11px "+NF,"center","#555");y+=16;
   if(o.pgs>1){tx("Halaman "+o.pg+" dari "+o.pgs,W/2,y,"11px "+NF,"center","#555");y+=16}
   tx("*** Terima kasih ***",W/2,y+4,"700 12px "+NF,"center");y+=34;return y};
- const sc0=document.createElement("canvas").getContext("2d"),H=run(sc0,false)+14;
+ const sc0=document.createElement("canvas").getContext("2d"),H=run(sc0,false)-12;
  const c=document.createElement("canvas");c.width=W*sc;c.height=Math.ceil(H*sc);const x=c.getContext("2d");x.scale(sc,sc);
- x.fillStyle="#dfe3f1";x.fillRect(0,0,W,H);
- const n=Math.round(PW/10),st=PW/n,t0=16,t1=24,b0=H-16,b1=H-24;
- x.beginPath();x.moveTo(PX,t1);for(let i=0;i<n;i++){x.lineTo(PX+i*st+st/2,t0);x.lineTo(PX+(i+1)*st,t1)}x.lineTo(PX+PW,b1);for(let i=n;i>0;i--){x.lineTo(PX+i*st-st/2,b0);x.lineTo(PX+(i-1)*st,b1)}x.closePath();
- x.shadowColor="rgba(40,50,110,.28)";x.shadowBlur=12;x.shadowOffsetY=3;x.fillStyle="#fffdf6";x.fill();x.shadowColor="transparent";
+ x.fillStyle="#fff";x.fillRect(0,0,W,H);
  run(x,true);return c}
 async function makeNota(title,sub,rows,tot,fname,single){const per=28,ch=[];for(let i=0;i<rows.length;i+=per)ch.push(rows.slice(i,i+per));if(!ch.length)ch.push([]);
  const out=[];for(let i=0;i<ch.length;i++){const cv=drawNota({title,sub,rows:ch[i],tot:i==ch.length-1?tot:null,pg:i+1,pgs:ch.length,wallet:S.name,name:R.prof?R.prof.name:"",single});
   const b=await new Promise(r=>cv.toBlob(r,"image/png"));out.push({b,u:URL.createObjectURL(b),n:fname+(ch.length>1?"-"+(i+1):"")+".png"})}
  NP=out;const sh=!!(navigator.canShare&&navigator.share);
- sheet(`<div class="row"><b>Nota siap</b><button class="g" onclick="closeM()">Tutup</button></div>${out.map((p,i)=>`${out.length>1?`<div class="mu">Halaman ${i+1} dari ${out.length}</div>`:""}<img src="${p.u}" alt="Nota" style="max-height:55vh;object-fit:contain;background:#dfe3f1"><div class="${sh?"f2":""}"><button onclick="dlNota(${i})">Simpan gambar</button>${sh?`<button class="gl" onclick="shNota(${i})">Bagikan</button>`:""}</div>`).join("")}`)}
+ sheet(`<div class="row"><b>Nota siap</b><button class="g" onclick="closeM()">Tutup</button></div>${out.map((p,i)=>`${out.length>1?`<div class="mu">Halaman ${i+1} dari ${out.length}</div>`:""}<img src="${p.u}" alt="Nota" style="max-height:55vh;object-fit:contain;background:#fff;border:1px solid var(--ln)"><div class="${sh?"f2":""}"><button onclick="dlNota(${i})">Simpan gambar</button>${sh?`<button class="gl" onclick="shNota(${i})">Bagikan</button>`:""}</div>`).join("")}`)}
 function dlNota(i){const p=NP[i];if(!p)return;const a=document.createElement("a");a.href=p.u;a.download=p.n;document.body.appendChild(a);a.click();a.remove();toast("Gambar nota disimpan")}
 function shNota(i){const p=NP[i];if(!p)return;try{const f=new File([p.b],p.n,{type:"image/png"});if(navigator.canShare({files:[f]}))navigator.share({files:[f]}).catch(()=>{})}catch(e){}}
 const fnm=t=>String(t).replace(/[^\w-]+/g,"_").replace(/^_+|_+$/g,"").slice(0,40)||"nota";
