@@ -145,9 +145,22 @@ body{min-height:100vh;min-height:100dvh;padding:env(safe-area-inset-top,0px) 0 e
 #ptr{position:fixed;top:8px;left:50%;transform:translate(-50%,-60px);z-index:80;background:rgba(20,24,58,.9);color:#fff;font-size:13px;font-weight:600;padding:7px 16px;border-radius:18px;pointer-events:none;transition:transform .15s}
 .hero.gold .sk{animation:tw1 8.8s ease-in-out var(--d) infinite}
 @keyframes tw1{0%{opacity:0;transform:scale(0) rotate(0)}5%{opacity:1;transform:scale(var(--z)) rotate(45deg)}11%{opacity:0;transform:scale(0) rotate(100deg)}100%{opacity:0;transform:scale(0) rotate(100deg)}}
+
+/* ===== v6: avatar, overlay dompet, riwayat per bulan ===== */
+header>div:first-child{display:flex;align-items:center;gap:10px}header>div:first-child>div{min-width:0}
+.av{width:40px;height:40px;border-radius:50%;object-fit:cover;flex:none;border:2px solid var(--edge);box-shadow:var(--sh)}
+.avw{position:relative;width:96px;height:96px}
+.avb{width:96px;height:96px;border-radius:50%;padding:0;overflow:hidden;background:var(--field);color:var(--mu);border:2px solid var(--edge);box-shadow:inset 0 1px 0 var(--hi),var(--sh);display:grid;place-items:center}
+.avb img{width:100%;height:100%;object-fit:cover;display:block}
+.cam{position:absolute;right:0;bottom:0;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#fff;background:linear-gradient(180deg,#6a72ff,#3238d4);border:2px solid var(--bg);pointer-events:none}
+.wit{position:relative;overflow:hidden;margin:0 -14px;padding:10px 14px}
+.wit>*:not(.ov){position:relative;z-index:1}
+.wit.hp{text-shadow:0 1px 8px var(--bg)}
+.ov{position:absolute;left:0;top:0;bottom:0;width:62%;height:100%;object-fit:cover;pointer-events:none;opacity:.92;-webkit-mask-image:linear-gradient(90deg,#000 30%,transparent);mask-image:linear-gradient(90deg,#000 30%,transparent)}
+.ms{margin-top:8px;padding:10px 12px;background:var(--field);border-radius:14px}.ms .row{padding:2px 0}.ms .row.t{border-top:1px solid var(--ln);margin-top:4px;padding-top:6px}
 </style></head><body>
 <div id="wrap">
-<header><div><h1>Moneysev</h1><div class="mu" id="sub"></div></div>
+<header><div><img class="av" id="av" alt="" hidden><div><h1>Moneysev</h1><div class="mu" id="sub"></div></div></div>
 <div id="ctl"><select id="ms" onchange="const q=this.value.split('-');S.y=+q[0];S.m=+q[1];AN=1;go()"></select>
 <button class="gl ic" id="sbtn" onclick="openSearch()" aria-label="Cari transaksi"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button><button class="gl sm" id="swb" onclick="askBack()" hidden>Ganti dompet</button></div></header>
 <div id="app"></div></div>
@@ -295,7 +308,7 @@ function pick(){
  const cs=R.ds.map(d=>({d,c:C(d)})),tot=cs.reduce((s,x)=>s+x.c.aset,0);
  return `<div class="card hero"><small>Total uang keseluruhan</small><div class="big">${rp(tot)}</div><small>${R.ds.length} dompet</small></div>
  <div class="card"><h2>Pilih dompet</h2><div class="sub">Ketuk dompet untuk masuk.</div>
- ${cs.map((x,i)=>`<div class="item row" style="cursor:pointer" onclick="enter(${i})"><div><b>${esc(x.d.name)}</b><div class="mu">Saldo ${rp(x.c.liq)}</div></div>
+ ${cs.map((x,i)=>`<div class="item row wit${PF?" hp":""}" style="cursor:pointer" onclick="enter(${i})">${PF?`<img class="ov" src="${PF}" alt="">`:""}<div><b>${esc(x.d.name)}</b><div class="mu">Saldo ${rp(x.c.liq)}</div></div>
  <div style="text-align:right"><b>${rp(x.c.aset)}</b><div class="mu">total uang</div><button class="g" onclick="event.stopPropagation();askDel(${i})">Hapus</button></div></div>`).join("")||`<div class="mu">Belum ada dompet. Buat yang pertama di bawah.</div>`}
  <div class="f2" style="margin-top:10px"><input id="dn" placeholder="Contoh: Multimedia"><button onclick="addD()">Buat dompet</button></div></div>`}
 function enter(i){history.pushState({w:1},"");S=R.ds[i];S.tab="home";const n=new Date();S.m=n.getMonth();S.y=n.getFullYear();FL=FL0();E=0;AN=1;go()}
@@ -310,9 +323,9 @@ function home(c){
  ${barH("pct",p,{pill:1})}<small>${gold?"Target tercapai!":"Estimasi tercapai: <b>"+c.est+"</b>"}</small></div>
  <div class="card"><div class="row"><div><div class="mu">Pemasukan</div><b class="pos">${cn("ti",c.ti)}</b></div>
  <div><div class="mu">Pengeluaran</div><b class="neg">${cn("te",c.te)}</b></div><div><div class="mu">Sisa</div><b>${cn("ts",c.ts)}</b></div></div></div>
- <div class="card"><div class="row"><h2>${title}</h2><button class="gl sm" onclick="openF()">Filter / Urutkan${n?` (${n})`:""}</button></div>
+ ${(()=>{const H=hist(l);return `<div class="card"><div class="row"><h2>${title}</h2><button class="gl sm" onclick="openF()">Filter / Urutkan${n?` (${n})`:""}</button></div>
  ${n||FL.range=="custom"?`<div class="sub">${l.length} transaksi · masuk ${rp(sum(l.filter(t=>t.type=="in")))} · keluar ${rp(sum(l.filter(t=>t.type=="out")))} <button class="g" onclick="FL=FL0();go()">Reset</button></div>`:""}
- ${l.length?hist(l):`<div class="mu" style="margin-top:8px">${n?"Tidak ada transaksi yang cocok dengan filter.":"Belum ada transaksi. Ketuk tombol + untuk mencatat."}</div>`}</div>`}
+ ${l.length?H.main:`<div class="mu" style="margin-top:8px">${n?"Tidak ada transaksi yang cocok dengan filter.":"Belum ada transaksi. Ketuk tombol + untuk mencatat."}</div>`}</div>${H.rest}`})()}`}
 function rmB(i){ask(`Hapus kategori ${esc(S.bud[i].n)}?`,()=>{S.bud.splice(i,1);go()})}
 function rmA(i){ask(`Hapus akun ${esc(S.accs[i])}?`,()=>{S.accs.splice(i,1);go()})}
 function bud(c){
@@ -336,9 +349,9 @@ function harta(c){
  <label>Tujuan menabung</label><input value="${esc(S.goal||"")}" placeholder="Contoh: Beli iPhone 18" maxlength="60" onchange="S.goal=this.value.trim();S.done=0;go()">
  <label style="margin-top:10px">Target nominal (Rp)</label><input type="number" inputmode="numeric" value="${S.target}" onchange="S.target=+this.value;S.done=0;go()">
  <div class="mu" style="margin-top:6px">Progres ${pct(c.aset).toFixed(0)}% · ${rp(c.aset)} dari ${rp(S.target)}</div></div>
- ${P?`<div class="card"><h2>Profil &amp; keamanan</h2><label>Nama</label><input value="${esc(P.name)}" maxlength="24" onchange="R.prof.name=this.value.trim()||R.prof.name;go()">
+ ${P?`<div class="card"><h2>Profil &amp; keamanan</h2>${photoUI()}<label>Nama</label><input value="${esc(P.name)}" maxlength="24" onchange="R.prof.name=this.value.trim()||R.prof.name;go()">
  <label style="margin-top:10px">Tanggal lahir</label><input type="date" value="${esc(P.birth||"")}" max="${ymd(new Date())}" onchange="R.prof.birth=this.value;save()">
- <div class="f2" style="margin-top:12px"><button class="gl" onclick="chPin()">Ganti PIN</button><button class="gl" onclick="lock()">Kunci sekarang</button></div>${photoUI()}</div>`:""}${bk()}`}
+ <div class="f2" style="margin-top:12px"><button class="gl" onclick="chPin()">Ganti PIN</button><button class="gl" onclick="lock()">Kunci sekarang</button></div></div>`:""}${bk()}`}
 function list(l,pay){return l.length?l.map(x=>{const s=x.v-x.paid;return `<div class="item"><div class="row"><b>${esc(x.n)}</b><span>${s<=0?`<span class="chip ok">Lunas</span>`:`<b>${rp(s)}</b>`}</span></div>
  <div class="row"><span class="mu">Total ${rp(x.v)}${x.paid&&s>0?" · terbayar "+rp(x.paid):""}${x.due?" · "+esc(x.due):""}</span><span>${s>0?`<button class="g" onclick="openP(${x.id})">${pay}</button>`:""}<button class="g" onclick="delL(${x.id})">Hapus</button></span></div></div>`}).join(""):`<div class="mu">Belum ada.</div>`}
 function hutang(c){
@@ -539,13 +552,18 @@ async function bkParse(buf){const sh=await XLU.read(buf),nn=v=>{if(typeof v=="nu
 const iv=i=>i.k=="gold"?i.u*1000*i.p:i.u*i.p;
 let PF=null;ph("get","profile").then(u=>{PF=u;if(!S&&R.prof)go()});
 const DM=()=>{const n=new Date();return n.getFullYear()==S.y&&n.getMonth()==S.m?n.getDate():new Date(S.y,S.m+1,0).getDate()};
-function hist(l){if(FL.sort!="new"&&FL.sort!="old")return l.map(txRow).join("");const g={};let h="",k="";
- l.forEach(t=>{if(t.ln)return;const q=yr(t)+"-"+t.m,x=g[q]=g[q]||{i:0,o:0};t.type=="in"?x.i+=t.v:x.o+=t.v});
- l.forEach(t=>{const q=yr(t)+"-"+t.m;if(q!=k){k=q;const x=g[q]||{i:0,o:0};h+=`<div class="mh"><b>${MN[t.m]} ${yr(t)}</b><div class="row mu"><span>Total Pengeluaran</span><b class="neg">${rp(x.o)}</b></div><div class="row mu"><span>Total Pemasukan</span><b class="pos">${rp(x.i)}</b></div></div>`}h+=txRow(t)});return h}
+function msum(x,cap){return `<div class="ms">${cap?`<div class="mu" style="font-size:12px;margin-bottom:2px">${cap}</div>`:""}<div class="row"><span class="mu">Pemasukan</span><b class="pos">${rp(x.i)}</b></div><div class="row"><span class="mu">Pengeluaran</span><b class="neg">${rp(x.o)}</b></div><div class="row t"><span class="mu">Sisa</span><b class="${x.i-x.o<0?"neg":""}">${rp(x.i-x.o)}</b></div></div>`}
+function hist(l){if(FL.sort!="new"&&FL.sort!="old")return{main:l.map(txRow).join(""),rest:""};
+ const G=[],idx={},nw=new Date(),ck=nw.getFullYear()+"-"+nw.getMonth();
+ l.forEach(t=>{const q=yr(t)+"-"+t.m;let x=idx[q];if(!x){x=idx[q]={q,m:t.m,y:yr(t),a:[],i:0,o:0};G.push(x)}x.a.push(t);if(!t.ln)t.type=="in"?x.i+=t.v:x.o+=t.v});
+ let main="",rest="";
+ G.forEach(x=>{if(x.q==ck)main+=x.a.map(txRow).join("")+msum(x,MN[x.m]+" "+x.y);
+  else rest+=`<div class="card"><h2>${MN[x.m]} ${x.y}</h2>${x.a.map(txRow).join("")}${msum(x)}</div>`});
+ return{main,rest}}
 function openD(id){const t=S.tx.find(x=>x.id==id);if(!t)return;const r=(a,b)=>b?`<div class="row"><span class="mu">${a}</span><b style="text-align:right">${esc(b)}</b></div>`:"";
  sheet(`<div class="row"><b>Rincian transaksi</b><button class="g" onclick="closeM()">Tutup</button></div>${t.ph?`<img id="dpi" alt="Foto nota" style="max-height:65vh;object-fit:contain;background:var(--field)">`:""}<div class="big ${t.type=="in"?"pos":"neg"}">${t.type=="in"?"+":"-"}${rp(t.v)}</div>${r("Keterangan",t.d)}${r("Jenis",t.type=="in"?"Pemasukan":"Pengeluaran")}${r("Tanggal",fmt(tsOf(t)))}${r("Akun",t.acc)}${r("Kategori",t.cat)}${r("Catatan",t.note)}<button style="background:var(--ng)" onclick="del(${t.id})">Hapus transaksi</button>`);
  if(t.ph)ph("get",S.id+"-"+id).then(u=>{const e=$("#dpi");if(e&&u)e.src=u})}
-function go(){save();const pk=!S,fx=FXS,tab=pk?"":S.tab;FXS=null;document.body.classList.toggle("pk",pk);
+function go(){save();const pk=!S,fx=FXS,tab=pk?"":S.tab;FXS=null;document.body.classList.toggle("pk",pk);{const av=$("#av"),sh=!!PF&&!(!pk&&tab=="as");av.hidden=!sh;if(sh&&av._p!==PF){av.src=PF;av._p=PF}}
  $("#ctl").style.display=$("nav").style.display=$("#plus").style.display=pk?"none":"";$("#sub").textContent=pk?"":(R.prof?R.prof.name+" · ":"")+S.name;
  if(!pk){$("#ms").hidden=tab!="bud";$("#sbtn").hidden=tab=="as";$("#swb").hidden=tab!="as";
   const n=new Date();let ey=n.getFullYear(),em=n.getMonth(),ly=ey,lm=em;S.tx.forEach(t=>{const y=yr(t);if(y<ey||y==ey&&t.m<em){ey=y;em=t.m}});
@@ -557,7 +575,9 @@ function go(){save();const pk=!S,fx=FXS,tab=pk?"":S.tab;FXS=null;document.body.c
 function rmI(i){ask(`Hapus investasi ${esc(S.invs[i].n)}?`,()=>{S.invs.splice(i,1);go()})}
 function addI(){const n=$("#in").value.trim(),k=$("#ik").value;if(!n)return;S.invs.push({id:Date.now(),k,n,u:0,p:k=="gold"?2224:1});go()}
 function bk(){return`<div class="card"><h2>Backup &amp; data</h2><div class="sub">Format Excel (.xlsx) sama seperti file Keuanganku. Bisa dibuka di Google Sheets lewat File → Impor. Foto nota tidak ikut di backup.</div><div class="f2"><button class="gl" onclick="bkOut()">Backup ke xlsx</button><button class="gl" onclick="$('#bkf').click()">Pulihkan dari xlsx</button></div><input id="bkf" type="file" accept=".xlsx" hidden onchange="bkIn(this.files[0]);this.value=''"><button class="w" style="background:var(--ng)" onclick="wipeAsk()">Hapus semua data</button></div>`}
-function photoUI(){return`<div class="row" style="margin-top:12px"><div style="display:flex;gap:10px;align-items:center">${PF?`<img src="${PF}" alt="" style="width:44px;height:44px;border-radius:50%;object-fit:cover">`:""}<span class="mu">Foto profil</span></div><span><button class="gl sm" onclick="$('#pf').click()">${PF?"Ganti":"Unggah"}</button>${PF?`<button class="g" onclick="pfDel()">Hapus</button>`:""}</span></div><input id="pf" type="file" accept="image/*" hidden onchange="pfSet(this.files[0]);this.value=''">`}
+function photoUI(){return`<div style="display:flex;justify-content:center;margin:4px 0 16px"><div class="avw"><button class="avb" onclick="pfMenu()" aria-label="Foto profil">${PF?`<img src="${PF}" alt="">`:`<svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>`}</button><span class="cam"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span></div></div>
+<input id="pfc" type="file" accept="image/*" capture="user" hidden onchange="pfSet(this.files[0]);this.value=''"><input id="pf" type="file" accept="image/*" hidden onchange="pfSet(this.files[0]);this.value=''">`}
+function pfMenu(){sheet(`<b>Foto profil</b><button class="gl" onclick="closeM();$('#pfc').click()">Ambil foto</button><button class="gl" onclick="closeM();$('#pf').click()">Unggah dari galeri</button>${PF?`<button class="g" style="color:var(--ng)" onclick="closeM();pfDel()">Hapus foto</button>`:""}<button class="g" onclick="closeM()">Batal</button>`)}
 function pfSet(f){if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,800/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*k;c.height=im.height*k;c.getContext("2d").drawImage(im,0,0,c.width,c.height);PF=c.toDataURL("image/jpeg",.8);ph("put","profile",PF);go()};im.src=r.result};r.readAsDataURL(f)}
 function pfDel(){PF=null;ph("del","profile");go()}
 function confirmBox(t,s,y,fn){CBF=fn;sheet(`<b>${t}</b><div class="mu">${s}</div><div class="f2"><button class="gl" onclick="CBF=null;closeM()">Batal</button><button onclick="yes2()">${y}</button></div>`)}
