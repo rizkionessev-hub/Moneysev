@@ -58,7 +58,7 @@ nav button.on{color:var(--pr);background:var(--field);box-shadow:inset 0 1px 0 v
 .sheet img{width:100%;border-radius:16px}
 @keyframes fade{from{opacity:0}}
 @keyframes pop{from{opacity:0;transform:translateY(50px)}}
-@keyframes up{from{opacity:0;transform:translateY(16px) scale(.98)}}
+@keyframes up{from{opacity:0;transform:translate(var(--dx,0px),16px) scale(.98)}}
 @keyframes grow{from{transform:scaleX(0)}}
 .enter>*{animation:up .5s cubic-bezier(.2,.8,.2,1) both}
 .enter>:nth-child(2){animation-delay:.07s}.enter>:nth-child(3){animation-delay:.14s}.enter>:nth-child(n+4){animation-delay:.21s}
@@ -166,6 +166,9 @@ header>div:first-child{display:flex;align-items:center;gap:10px}header>div:first
 .bub{position:fixed;right:18px;bottom:calc(24px + env(safe-area-inset-bottom,0px));width:60px;height:60px;border-radius:50%;padding:0;display:grid;place-items:center;z-index:3;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 22px rgba(50,56,212,.45)}
 .ov{position:absolute;left:0;top:0;bottom:0;width:62%;height:100%;object-fit:cover;pointer-events:none;opacity:.92;-webkit-mask-image:linear-gradient(90deg,#000 30%,transparent);mask-image:linear-gradient(90deg,#000 30%,transparent)}
 .ms{margin-top:8px;padding:10px 12px;background:var(--field);border-radius:14px}.ms .row{padding:2px 0}.ms .row.t{border-top:1px solid var(--ln);margin-top:4px;padding-top:6px}
+nav button{position:relative;z-index:1}nav button.on{background:none;box-shadow:none}
+.pill{position:absolute;top:6px;bottom:6px;left:0;width:0;border-radius:26px;background:var(--field);border:1px solid var(--edge);box-shadow:inset 0 1px 0 var(--hi),inset 0 -8px 14px rgba(255,255,255,.12),0 3px 14px rgba(60,70,160,.22);-webkit-backdrop-filter:blur(12px) saturate(170%);backdrop-filter:blur(12px) saturate(170%);transition:transform .6s cubic-bezier(.3,1.3,.4,1),width .6s cubic-bezier(.3,1.3,.4,1);pointer-events:none;z-index:0}
+.pill::after{content:"";position:absolute;left:14%;right:14%;top:2px;height:38%;border-radius:20px;background:linear-gradient(180deg,rgba(255,255,255,.55),transparent);opacity:.7}
 /* ===== v12: akun, investasi, pindah saldo, analitik ===== */
 #an{z-index:8;padding:12px 16px 60px}#ap{padding-bottom:110px}
 .chip.wn{background:transparent;border:1px solid var(--ng);color:var(--ng)}
@@ -369,17 +372,6 @@ function hutang(c){
  <label style="margin-top:10px">Akun (hutang: uang masuk · pinjaman: uang keluar)</label><select id="la"><option value="">Jangan ubah saldo</option>${opts(S.accs)}</select>
  <button class="w" onclick="addL()">Simpan</button></div>`}
 const TABS=[["home","Home",home],["bud","Anggaran",bud],["hu","Hutang",hutang],["as","Profil",harta]];
-function go(){save();const pk=!S,fx=FXS;FXS=null;
- $("#ctl").style.display=$("nav").style.display=$("#plus").style.display=pk?"none":"";$("#sub").textContent=pk?"":(R.prof?R.prof.name+" · ":"")+S.name;
- if(!pk){const cy=new Date().getFullYear(),yy=S.tx.map(yr).concat(S.y),lo=Math.min(cy-10,...yy),hi=Math.max(cy+10,...yy),ys=[];for(let y=lo;y<=hi;y++)ys.push(y);
-  $("#ms").innerHTML=MN.map((n,i)=>`<option value="${i}" ${i==S.m?"selected":""}>${n}</option>`).join("");
-  $("#ys").innerHTML=ys.map(y=>`<option ${y==S.y?"selected":""}>${y}</option>`).join("");
-  $("#nav").innerHTML=TABS.map(t=>`<button class="${t[0]==S.tab?"on":""}" onclick="S.tab='${t[0]}';AN=1;go()">${t[1]}</button>`).join("")}
- const a=$("#app");a.classList.remove("enter");a.innerHTML=pk?pick():TABS.find(t=>t[0]==S.tab)[2](C());
- if(AN){void a.offsetWidth;a.classList.add("enter");AN=0}
- if(fx&&!pk)runFX(fx);
- if(SR&&!pk)renderSR();
- goalCheck(fx?1700:450);fab()}
 const sheet=h=>$("#modal").innerHTML=`<div class="sheet" onclick="if(event.target==this)closeM()"><div>${h}</div></div>`;
 function closeM(){$("#modal").innerHTML="";PH=null}
 function openM(){if(!S.accs.length){sheet(`<b>Belum ada akun</b><div class="mu">Tambahkan minimal satu akun (cash, bank, e-wallet) dulu sebelum mencatat transaksi.</div><button onclick="closeM();openAP()">Buka Aset &amp; target</button><button class="g" onclick="closeM()">Tutup</button>`);return}const cats=[...S.bud.map(b=>b.n),"Di luar anggaran"],d0=$("#td")?$("#td").value:"",v0=$("#tv")?$("#tv").value:"",n0=$("#tn")?$("#tn").value:"";
@@ -441,7 +433,19 @@ function lock(){if(!R.prof||!R.prof.pin)return;
   const w=Math.ceil((LKU-Date.now())/1000);if(w>0)return"Coba lagi dalam "+w+" detik";
   if(await hp(p,R.prof.pin.s)===R.prof.pin.h){FA=0;closePad();go();return}
   FA++;if(FA>=5){FA=0;LKU=Date.now()+30000;return"Terlalu banyak salah. Tunggu 30 detik"}return"PIN salah ("+FA+"/5)"}})}
-function forgot(){PD=null;$("#lock").innerHTML=`<div class="lk"><img src="icon-192.png" alt=""><h2>Lupa PIN?</h2><div class="mu">PIN tidak bisa dipulihkan. Satu-satunya cara adalah menghapus semua data Moneysev di HP ini lalu mulai dari awal.<br>Ketik <b>HAPUS</b> untuk melanjutkan.</div><input id="fz" placeholder="HAPUS" autocomplete="off" style="margin-top:8px"><button style="background:var(--ng);width:100%" onclick="wipe()">Hapus semua data</button><button class="g" onclick="lock()">Kembali</button></div>`}
+function forgot(){PD=null;const hs=R.prof&&R.prof.sq&&R.prof.sq.length==2;$("#lock").innerHTML=`<div class="lk"><img src="icon-192.png" alt=""><h2>Lupa PIN?</h2>
+ ${hs?`<div class="mu">Jawab 2 pertanyaan keamanan yang kamu buat tadi untuk membuat PIN baru. Data tetap aman.</div><button style="width:100%;margin-top:6px" onclick="forgotSQ()">Jawab pertanyaan keamanan</button><div class="mu" style="margin-top:14px">Atau, kalau lupa jawabannya juga:</div>`:""}
+ <div class="mu">PIN tidak bisa dipulihkan tanpa pertanyaan keamanan. Cara lainnya adalah menghapus semua data Moneysev di HP ini lalu mulai dari awal.<br>Ketik <b>HAPUS</b> untuk melanjutkan.</div><input id="fz" placeholder="HAPUS" autocomplete="off" style="margin-top:8px"><button style="background:var(--ng);width:100%" onclick="wipe()">Hapus semua data</button><button class="g" onclick="lock()">Kembali</button></div>`}
+function forgotSQ(){const sq=R.prof.sq;$("#lock").innerHTML=`<div class="lk"><img src="icon-192.png" alt=""><h2>Pertanyaan keamanan</h2><div class="mu">Jawab keduanya dengan benar. Huruf besar atau kecil tidak berpengaruh.</div>
+ ${sq.map((x,i)=>`<div style="width:100%;text-align:left"><label>${esc(x.q)}</label><input id="fa${i}" autocomplete="off" placeholder="Jawabanmu"></div>`).join("")}<div class="pe" id="fe"></div><button style="width:100%" onclick="checkSQ()">Verifikasi</button><button class="g" onclick="forgot()">Kembali</button></div>`}
+async function checkSQ(){const w=Math.ceil((LKU-Date.now())/1000),e=$("#fe");if(w>0){e.textContent="Coba lagi dalam "+w+" detik";return}
+ const sq=R.prof.sq;let ok=1;for(let i=0;i<sq.length;i++){if(await hp(nrm($("#fa"+i).value),sq[i].s)!==sq[i].h)ok=0}
+ if(!ok){FA++;if(FA>=5){FA=0;LKU=Date.now()+30000;e.textContent="Terlalu banyak salah. Tunggu 30 detik"}else e.textContent="Jawaban salah ("+FA+"/5)";return}
+ FA=0;resetPin()}
+function resetPin(){pinPad({title:"PIN baru",sub:"6 angka. Data kamu tetap aman.",alt:{t:"Batal",f:lock},cb:p=>{pinPad({title:"Ulangi PIN baru",alt:{t:"Mulai lagi",f:resetPin},cb:async q=>{if(q!==p)return"PIN tidak sama, coba lagi";const s=salt();R.prof.pin={s,h:await hp(p,s)};save();closePad();go();toast("PIN berhasil diganti")}})}})}
+function sqAsk(){pinPad({title:"Masukkan PIN",sub:"Untuk mengubah pertanyaan keamanan",alt:{t:"Batal",f:closePad},cb:async p=>{if(await hp(p,R.prof.pin.s)!==R.prof.pin.h)return"PIN salah";closePad();sqSheet()}})}
+function sqSheet(){const s=R.prof.sq||[];sheet(`<b>Pertanyaan keamanan</b><div class="mu">Dipakai kalau kamu lupa PIN. Jawaban disimpan dalam bentuk hash, jadi tidak bisa dibaca balik. Isi ulang jawaban untuk kedua pertanyaan.</div>${sqBlock(1,s[0]?s[0].q:SQP[0],"")}${sqBlock(2,s[1]?s[1].q:SQP[1],"")}<div class="er" id="te"></div><button onclick="sqSave()">Simpan</button><button class="g" onclick="closeM()">Batal</button>`)}
+async function sqSave(){const e=sqCheck();if(e){terr(e);return}R.prof.sq=await sqHash(sqRead(1),sqRead(2));save();closeM();toast("Pertanyaan keamanan disimpan");go()}
 function wipe(){if($("#fz").value.trim().toUpperCase()!="HAPUS")return;try{localStorage.removeItem(KEY);localStorage.removeItem("moneysev-v1");indexedDB.deleteDatabase("moneysev-img")}catch(e){}location.reload()}
 function chPin(){pinPad({title:"PIN lama",sub:"Masukkan PIN saat ini",alt:{t:"Batal",f:closePad},cb:async p=>{if(await hp(p,R.prof.pin.s)!==R.prof.pin.h)return"PIN salah";newPin()}})}
 function newPin(){pinPad({title:"PIN baru",sub:"6 angka",alt:{t:"Batal",f:closePad},cb:p=>{pinPad({title:"Ulangi PIN baru",alt:{t:"Mulai lagi",f:newPin},cb:async q=>{if(q!==p)return"PIN tidak sama, coba lagi";const s=salt();R.prof.pin={s,h:await hp(p,s)};save();closePad();toast("PIN berhasil diganti")}})}})}
@@ -449,20 +453,31 @@ function newPin(){pinPad({title:"PIN baru",sub:"6 angka",alt:{t:"Batal",f:closeP
 let HID=0;document.addEventListener("visibilitychange",()=>{if(document.hidden)HID=Date.now();else if(HID&&Date.now()-HID>60000&&R.prof&&R.prof.pin&&!PD&&!$("#splash"))lock()});
 
 /* ---------- onboarding pertama kali ---------- */
-let OB={name:"",birth:"",goal:"",target:""};
+let OB={name:"",birth:"",goal:"",target:"",q1:"",a1:"",q2:"",a2:""};
+const SQP=["Siapa nama ayahmu?","Siapa nama ibumu?","Apa nama peliharaan pertamamu?","Apa nama kecilmu / panggilan waktu kecil?","Di kota mana kamu lahir?","Apa nama sekolah dasarmu?"],nrm=a=>String(a).toLowerCase().replace(/\s+/g," ").trim();
+function sqBlock(n,q,a){const pre=SQP.includes(q),cu=!pre&&!!q;
+ return `<div class="fld"><label>Pertanyaan keamanan ${n}</label><select id="sq${n}" onchange="sqSel(${n})">${[...SQP.map(x=>[x,x]),["__c","Tulis pertanyaan sendiri..."]].map(([v,t])=>`<option value="${esc(v)}" ${(v==q||(v=="__c"&&cu))?"selected":""}>${esc(t)}</option>`).join("")}</select>
+ <input id="sqc${n}" placeholder="Tulis pertanyaanmu" maxlength="80" value="${cu?esc(q):""}" style="margin-top:6px;${cu?"":"display:none"}" autocomplete="off"><input id="sa${n}" placeholder="Jawabanmu" maxlength="60" autocomplete="off" style="margin-top:6px" value="${esc(a||"")}"></div>`}
+function sqSel(n){$("#sqc"+n).style.display=$("#sq"+n).value=="__c"?"":"none"}
+function sqRead(n){const v=$("#sq"+n).value;return{q:(v=="__c"?$("#sqc"+n).value:v).trim(),a:$("#sa"+n).value.trim()}}
+function sqCheck(){const x=sqRead(1),y=sqRead(2);
+ if(!x.q||!y.q)return"Pertanyaan keamanan belum lengkap.";if(nrm(x.q)==nrm(y.q))return"Dua pertanyaan harus berbeda.";
+ if(x.a.length<2||y.a.length<2)return"Jawaban keamanan minimal 2 huruf.";return""}
+async function sqHash(x,y){const o=[];for(const t of [x,y]){const s=salt();o.push({q:t.q,s,h:await hp(nrm(t.a),s)})}return o}
 function showOb(){const o=$("#ob");o.hidden=false;
  o.innerHTML=`<div class="obw enter"><div class="card hero"><img src="icon-192.png" alt=""><h1>Yuk mulai di Moneysev</h1><small>Isi data singkat dulu, lalu buat PIN supaya aplikasi tidak bisa dibuka sembarangan.</small></div>
  <div class="card"><div class="fld"><label>Nama / username</label><input id="on" maxlength="24" placeholder="Contoh: Budi" value="${esc(OB.name)}" autocomplete="off"></div>
  <div class="fld"><label>Tanggal lahir</label><input id="ob2" type="date" max="${ymd(new Date())}" value="${esc(OB.birth)}"></div>
  <div class="fld"><label>Target tabungan (tujuan menabung)</label><input id="og" maxlength="60" placeholder="Contoh: Beli iPhone 18" value="${esc(OB.goal)}" autocomplete="off"></div>
  <div class="fld"><label>Berapa target nominalnya? (Rp)</label><input id="ot" type="number" inputmode="numeric" placeholder="Contoh: 18000000" value="${esc(OB.target)}" oninput="$('#otx').textContent=this.value>0?rp(+this.value):''"><div class="mu" id="otx" style="margin-top:4px">${OB.target>0?rp(+OB.target):""}</div></div>
+ </div><div class="card"><h2>Pertanyaan keamanan</h2><div class="sub">Dipakai kalau kamu lupa PIN, supaya tidak perlu menghapus data. Pilih pertanyaan atau tulis sendiri.</div>${sqBlock(1,OB.q1||SQP[0],OB.a1)}${sqBlock(2,OB.q2||SQP[1],OB.a2)}
  <div class="er" id="oe"></div><button class="w" onclick="obNext()">Lanjutkan</button></div></div>`}
-function obNext(){const n=$("#on").value.trim(),b=$("#ob2").value,g=$("#og").value.trim(),t=+$("#ot").value;OB={name:n,birth:b,goal:g,target:$("#ot").value};
- const e=!n?"Nama belum diisi.":!b||new Date(b)>new Date()||new Date(b).getFullYear()<1900?"Tanggal lahir belum benar.":!g?"Tujuan menabung belum diisi.":!(t>0)?"Target nominal harus lebih dari 0.":"";
+function obNext(){const n=$("#on").value.trim(),b=$("#ob2").value,g=$("#og").value.trim(),t=+$("#ot").value;const s1=sqRead(1),s2=sqRead(2);OB={name:n,birth:b,goal:g,target:$("#ot").value,q1:s1.q,a1:s1.a,q2:s2.q,a2:s2.a};
+ const e=!n?"Nama belum diisi.":!b||new Date(b)>new Date()||new Date(b).getFullYear()<1900?"Tanggal lahir belum benar.":!g?"Tujuan menabung belum diisi.":!(t>0)?"Target nominal harus lebih dari 0.":sqCheck();
  if(e){$("#oe").textContent=e;return}
  const first=()=>pinPad({title:"Buat PIN",sub:"6 angka untuk mengunci Moneysev",alt:{t:"Kembali",f:()=>{closePad();showOb()}},cb:p=>{
   pinPad({title:"Ulangi PIN",sub:"Masukkan PIN yang sama",alt:{t:"Mulai lagi",f:first},cb:async q=>{if(q!==p)return"PIN tidak sama, coba lagi";await obDone(p)}})}});first()}
-async function obDone(pin){const s=salt();R.prof={name:OB.name,birth:OB.birth,pin:{s,h:await hp(pin,s)}};
+async function obDone(pin){const s=salt();R.prof={name:OB.name,birth:OB.birth,pin:{s,h:await hp(pin,s)},sq:await sqHash({q:OB.q1,a:OB.a1},{q:OB.q2,a:OB.a2})};
  let d=R.ds[0];if(!d){d=mk("Utama");R.ds.push(d)}d.goal=OB.goal;d.target=+OB.target;d.done=0;save();
  closePad();$("#ob").hidden=true;$("#ob").innerHTML="";go();toast("Selamat datang, "+R.prof.name+"!")}
 
@@ -554,7 +569,7 @@ async function bkParse(buf){const sh=await XLU.read(buf),nn=v=>{if(typeof v=="nu
  W.accs=W.accs&&W.accs.length?W.accs:["Cash"];T.forEach(t=>{if(!t.acc)t.acc=W.accs[0];if(!W.accs.includes(t.acc))W.accs.push(t.acc)});W.open=W.open||{};W.tx=T;return W}
 
 /* ===== v5: perubahan baru ===== */
-const iv=i=>i.k=="gold"?i.u*1000*i.p:i.u*i.p;
+const iv=i=>i.u*i.p/qv(i);
 const PFS={},PFL={};let PF=null;
 (async()=>{for(const D of R.ds){PFS[D.id]=await ph("get","profile-"+D.id);if(PFS[D.id])PFL[D.id]=await lumOf(PFS[D.id])}
  const old=await ph("get","profile");if(old){const f=R.ds[0];if(f&&!PFS[f.id]){PFS[f.id]=old;PFL[f.id]=await lumOf(old);await ph("put","profile-"+f.id,old)}await ph("del","profile")}
@@ -572,13 +587,13 @@ function openD(id){const t=S.tx.find(x=>x.id==id);if(!t)return;const r=(a,b)=>b?
  sheet(`<div class="row"><b>Rincian transaksi</b><button class="g" onclick="closeM()">Tutup</button></div>${t.ph?`<img id="dpi" alt="Foto nota" style="max-height:65vh;object-fit:contain;background:var(--field)">`:""}<div class="big ${t.type=="in"?"pos":"neg"}">${t.type=="in"?"+":"-"}${rp(t.v)}</div>${r("Keterangan",t.d)}${r("Jenis",t.type=="in"?"Pemasukan":"Pengeluaran")}${r("Tanggal",fmt(tsOf(t)))}${r("Akun",t.acc)}${r("Kategori",t.cat)}${r("Catatan",t.note)}${t.ln?(trk(t)?`<div class="mu">Pemindahan saldo/investasi tidak dihitung sebagai pemasukan atau pengeluaran.</div>`:`<div class="mu">Transaksi hutang/pinjaman diubah lewat menu Hutang.</div>`):`<button class="gl" onclick="openE(${t.id})">Edit transaksi</button>`}<button class="gl" onclick="printTx(${t.id})">Cetak nota</button>${trk(t)?`<button style="background:var(--ng)" onclick="undoAsk(${t.lid})">Batalkan pemindahan</button>`:`<button style="background:var(--ng)" onclick="del(${t.id})">Hapus transaksi</button>`}`);
  if(t.ph)ph("get",S.id+"-"+id).then(u=>{const e=$("#dpi");if(e&&u)e.src=u})}
 function go(){R.ds.forEach(fixD);save();const pk=!S,fx=FXS,tab=pk?"":S.tab;FXS=null;document.body.classList.toggle("pk",pk);{PF=pk?null:(PFS[S.id]||null);const av=$("#av"),sh=!!PF&&!pk&&tab!="as";av.hidden=!sh;if(sh&&av._p!==PF){av.src=PF;av._p=PF}}
- $("#ctl").style.display=$("nav").style.display=$("#plus").style.display=pk?"none":"";$("#sub").textContent=pk?"":(R.prof?R.prof.name+" · ":"")+S.name;
+ if(pk)$("#nav").removeAttribute("data-i");$("#ctl").style.display=$("nav").style.display=$("#plus").style.display=pk?"none":"";$("#sub").textContent=pk?"":(R.prof?R.prof.name+" · ":"")+S.name;
  if(!pk){$("#ms").hidden=tab!="bud";$("#sbtn").hidden=tab=="as";$("#swb").hidden=tab!="as";
   const n=new Date();let ey=n.getFullYear(),em=n.getMonth(),ly=ey,lm=em;S.tx.forEach(t=>{const y=yr(t);if(y<ey||y==ey&&t.m<em){ey=y;em=t.m}});
   if(S.y<ey||S.y==ey&&S.m<em){ey=S.y;em=S.m}if(S.y>ly||S.y==ly&&S.m>lm){ly=S.y;lm=S.m}
   let o="";for(let y=ly,m=lm;y>ey||y==ey&&m>=em;){o+=`<option value="${y}-${m}" ${y==S.y&&m==S.m?"selected":""}>${MN[m]} ${y}</option>`;if(--m<0){m=11;y--}}
-  $("#ms").innerHTML=o;$("#nav").innerHTML=TABS.map(t=>`<button class="${t[0]==S.tab?"on":""}" onclick="S.tab='${t[0]}';AN=1;go()">${t[1]}</button>`).join("")}
- const a=$("#app");a.classList.remove("enter");a.innerHTML=pk?pick():TABS.find(t=>t[0]==S.tab)[2](C());
+  $("#ms").innerHTML=o;navRender()}
+ const a=$("#app");a.classList.remove("enter");a.style.setProperty("--dx",TDIR*34+"px");TDIR=0;a.innerHTML=pk?pick():TABS.find(t=>t[0]==S.tab)[2](C());
  if(AN){void a.offsetWidth;a.classList.add("enter");AN=0}if(fx&&!pk)runFX(fx);if(SR&&!pk)renderSR();if(MV&&!pk)renderMV();if(APG&&!pk)renderAP();if(OVG&&!pk)renderOV();if(ANG&&!pk)renderAN();goalCheck(fx?2900:450);fab()}
 function rmI(i){ask(`Hapus investasi ${esc(S.invs[i].n)}?`,()=>{S.invs.splice(i,1);go()})}
 function bk(){return`<div class="card"><h2>Backup &amp; data</h2><div class="sub">Format Excel (.xlsx) sama seperti file Keuanganku. Bisa dibuka di Google Sheets lewat File → Impor. Foto nota tidak ikut di backup.</div><div class="f2"><button class="gl" onclick="bkOut()">Backup ke xlsx</button><button class="gl" onclick="$('#bkf').click()">Pulihkan dari xlsx</button></div><input id="bkf" type="file" accept=".xlsx" hidden onchange="bkIn(this.files[0]);this.value=''"><button class="w" style="background:var(--ng)" onclick="wipeAsk()">Hapus semua data</button></div>`}
@@ -755,14 +770,17 @@ function bkApply(nw){const W=BKW;BKW=null;closeM();if(!W)return;const done=()=>{
  const id=S.id,nm=S.name,tab=S.tab;Object.keys(S).forEach(k=>delete S[k]);Object.assign(S,mk(nm),W,{id,name:nm,tab,done:0});const n=new Date();S.m=n.getMonth();S.y=n.getFullYear();done()}
 
 /* ===== v12: akun custom, investasi bermodal, pindah saldo, analitik ===== */
-const IT={gold:{t:"Emas",u:"gram",pl:"Harga jual per gram",h:"Emas: isi gram yang kamu punya dan harga jual (buyback) per gram dari aplikasimu. Harga beli biasanya lebih tinggi dari harga jual, jadi di awal ada selisih."},
- rd:{t:"Reksa Dana",u:"unit",pl:"NAB per unit",h:"Reksa dana: isi jumlah unit penyertaan dan NAB per unit (ada di aplikasimu). Modal = total uang yang sudah kamu setor."},
- st:{t:"Saham",u:"lembar",pl:"Harga per lembar",h:"Saham: isi jumlah lembar (1 lot = 100 lembar) dan harga per lembar."},
- cr:{t:"Kripto",u:"koin",pl:"Harga per koin",h:"Kripto: isi jumlah koin dan harga per koin dalam rupiah."},
- o:{t:"Lainnya",u:"unit",pl:"Harga per unit",h:"Lainnya (deposito, obligasi, P2P, dll): kalau tidak ada unit, isi jumlah 1 dan harga = nilai sekarang."}};
-const itx=v=>IT[v.k]||IT.o,unitOf=v=>itx(v).u,pu=v=>v.k=="gold"?v.p*1000:v.p,rn=x=>Math.round(x*1e6)/1e6,nf=n=>rn(n).toLocaleString("id-ID",{maximumFractionDigits:6});
+const IT={gold:{t:"Emas",u:"gram",pl:"Harga jual",h:"Emas: isi gram yang kamu punya dan harga jual (buyback) per gram dari aplikasimu. Harga beli biasanya lebih tinggi dari harga jual, jadi di awal ada selisih."},
+ rd:{t:"Reksa Dana",u:"unit",pl:"NAB",h:"Reksa dana: isi jumlah unit penyertaan dan NAB per unit (ada di aplikasimu). Modal = total uang yang sudah kamu setor."},
+ st:{t:"Saham",u:"lembar",pl:"Harga",h:"Saham: isi jumlah lembar (1 lot = 100 lembar) dan harga per lembar."},
+ cr:{t:"Kripto",u:"koin",pl:"Harga",h:"Kripto: isi jumlah koin dan harga per koin dalam rupiah."},
+ o:{t:"Lainnya",u:"unit",pl:"Harga",h:"Lainnya (deposito, obligasi, P2P, dll): kalau tidak ada unit, isi jumlah 1 dan harga = nilai sekarang."}};
+const itx=v=>IT[v.k]||IT.o,unitOf=v=>itx(v).u,pu=v=>v.p/qv(v),rn=x=>Math.round(x*1e6)/1e6,nf=n=>rn(n).toLocaleString("id-ID",{maximumFractionDigits:6});
 const trk=t=>!!t.ln&&!S.loans.some(l=>l.id==t.lid);
-function fixD(D){D.accx=D.accx||{};D.invs.forEach(v=>{if(!v.h)v.h=[]})}
+function qv(i){return i.q||(i.k=="gold"?.001:1)}
+function fixD(D){D.accx=D.accx||{};D.invs.forEach(v=>{if(!v.h)v.h=[];if(!v.q){if(v.k=="gold")v.p=Math.round(v.p*1e3*1e6)/1e6;v.q=1}})}
+const QP=k=>k=="gold"?[1,.5,.1,.01,.001]:k=="st"?[1,100,.5,.1,.01,.001]:[1,.5,.1,.01,.001],qlab=(k,x)=>nf(x)+" "+(IT[k]||IT.o).u+(k=="st"&&x==100?" (1 lot)":""),ql=v=>nf(qv(v))+" "+unitOf(v);
+function qSel(){const x=$("#ivq2");if(x)x.style.display=$("#ivq").value=="x"?"":"none"}
 const gv=(i,d)=>$(i)?$(i).value:d,sg=n=>(n>0?"+":"")+rp(n),sm=(a,f)=>a.reduce((s,x)=>s+f(x),0),terr=m=>{const e=$("#te");if(e)e.textContent=m};
 const cpt=n=>{const a=Math.abs(n),s=n<0?"-":"";return s+(a>=1e9?(a/1e9).toFixed(1).replace(".",",")+"M":a>=1e6?(a/1e6).toFixed(a>=1e7?0:1).replace(".",",")+"jt":a>=1e3?Math.round(a/1e3)+"rb":String(Math.round(a)))};
 const pc=n=>(n>0?"+":"")+n.toFixed(1).replace(".",",")+"%";
@@ -806,24 +824,28 @@ function invCard(v,i){const t=itx(v),un=t.u,val=iv(v),has=v.c!=null&&v.u>0,pl=ha
  <div class="ms"><div class="row"><span class="mu">Jumlah</span><b>${nf(v.u)} ${un}</b></div>
  <div class="row"><span class="mu">Modal beli</span><b>${v.c==null?`<span class="mu">belum diisi</span>`:rp(v.c)}</b></div>
  ${has?`<div class="row"><span class="mu">Rata-rata beli per ${un}</span><b>${rp(avg)}</b></div>`:""}
- <div style="margin:8px 0 2px"><label>${t.pl} sekarang (update kapan saja)</label><input type="number" step="any" inputmode="decimal" value="${pu(v)||""}" placeholder="0" onchange="setPrice(${i},this.value)"></div>
+ <div style="margin:8px 0 2px"><label>${t.pl} sekarang per ${ql(v)} (update kapan saja)</label><input type="number" step="any" inputmode="decimal" value="${v.p||""}" placeholder="0" onchange="setPrice(${i},this.value)">${qv(v)!=1&&v.p>0?`<div class="mu" style="font-size:12px">Sama dengan ${rp(pu(v))} per ${un}</div>`:""}</div>
  ${has?`<div class="row t"><span class="mu">${pl<0?"Rugi":"Untung"} jika dijual sekarang</span><b class="${pl<0?"neg":"pos"}">${sg(pl)} (${pc(pp)})</b></div><div class="mu" style="font-size:12px">Balik modal kalau harga jual naik ke ${rp(avg)} per ${un}</div>`:`<div class="mu" style="font-size:12px;margin-top:4px">${v.u>0?"Isi modal lewat Ubah (atau catat lewat tombol Beli) supaya untung/rugi terhitung.":"Belum ada jumlah. Catat lewat tombol Beli."}</div>`}
  ${sold?`<div class="row"><span class="mu">Hasil penjualan sebelumnya</span><b class="${rl<0?"neg":"pos"}">${sg(rl)}</b></div>`:""}</div>
  <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:8px"><button class="sm" onclick="openTr('buy',${i})">Beli</button>${v.u>0?`<button class="gl sm" onclick="openTr('sell',${i})">Jual</button>`:""}<button class="g" onclick="openIH(${i})">Riwayat${v.h.length?" ("+v.h.length+")":""}</button><button class="g" onclick="openInv(${i})">Ubah</button><button class="g" onclick="rmI(${i})">Hapus</button></div></div>`}
-function setPrice(i,x){const v=S.invs[i],n=Math.max(0,+x||0),s=snap();v.p=v.k=="gold"?n/1000:n;FXS=s;go()}
+function setPrice(i,x){const v=S.invs[i],n=Math.max(0,+x||0),s=snap();v.p=n;FXS=s;go()}
 function openInv(i,keep){const nw=i<0,v=nw?null:S.invs[i],k=nw?INK:v.k,t=IT[k]||IT.o,
- n0=keep?gv("#iv1",""):nw?"":v.n,a0=keep?gv("#iv2",""):nw?"":(v.app||""),u0=keep?gv("#iv3",""):nw?"":(v.u||""),c0=keep?gv("#iv4",""):nw?"":(v.c==null?"":v.c),p0=keep?gv("#iv5",""):"";
+ n0=keep?gv("#iv1",""):nw?"":v.n,a0=keep?gv("#iv2",""):nw?"":(v.app||""),u0=keep?gv("#iv3",""):nw?"":(v.u||""),c0=keep?gv("#iv4",""):nw?"":(v.c==null?"":v.c),p0=keep?gv("#iv5",""):nw?"":(v.p||""),qd=nw?1:qv(v),pre=QP(k);
+ let cur=keep?gv("#ivq",String(qd)):String(qd);if(keep&&cur!="x"&&!pre.includes(+cur))cur="1";const isX=cur=="x"||!pre.includes(+cur),qx=cur=="x"?(keep?gv("#ivq2",""):""):(isX?cur:"");
  sheet(`<b>${nw?"Tambah investasi":"Ubah "+esc(v.n)}</b>
  ${nw?`<div><label>Jenis investasi</label><select id="ivk" onchange="INK=this.value;openInv(-1,1)">${vo(Object.keys(IT).map(x=>[x,IT[x].t]),k)}</select></div>`:`<span class="chip" style="width:max-content">${t.t}</span>`}
  <div><label>Nama</label><input id="iv1" value="${esc(n0)}" placeholder="${nw?"Contoh: "+t.t+" Antam":""}" maxlength="40"></div>
  <div><label>Aplikasi / media yang dipakai (opsional)</label><input id="iv2" value="${esc(a0)}" placeholder="Contoh: Pegadaian, Bibit, Bareksa, Ajaib" maxlength="40"></div>
  <div class="f2"><div><label>Jumlah${nw?" awal":""} (${t.u})</label><input id="iv3" type="number" step="any" inputmode="decimal" value="${esc(u0)}" placeholder="0"></div><div><label>Total modal beli (Rp)</label><input id="iv4" type="number" inputmode="numeric" value="${esc(c0)}" placeholder="Opsional"></div></div>
- ${nw?`<div><label>${t.pl} sekarang (Rp)</label><input id="iv5" type="number" step="any" inputmode="decimal" value="${esc(p0)}" placeholder="0"></div>`:""}
- <div class="mu">${t.h}</div>
+ <div class="f2"><div><label>Harga dihitung per</label><select id="ivq" onchange="qSel()">${pre.map(x=>`<option value="${x}" ${!isX&&+cur==x?"selected":""}>${qlab(k,x)}</option>`).join("")}<option value="x" ${isX?"selected":""}>Lainnya (isi sendiri)</option></select><input id="ivq2" type="number" step="any" inputmode="decimal" placeholder="Isi jumlah ${t.u}" value="${esc(qx)}" style="margin-top:6px;${isX?"":"display:none"}"></div>
+ <div><label>${t.pl} sekarang (Rp)</label><input id="iv5" type="number" step="any" inputmode="decimal" value="${esc(p0)}" placeholder="0"></div></div>
+ <div class="mu">Contoh emas: harga Rp2.224 per 0,001 gram, atau Rp2.224.000 per 1 gram. Pilih satuan yang sama dengan yang tertulis di aplikasimu. Semua ini bisa diubah lagi lewat tombol Ubah.</div>
+ <div class="mu">${t.h}</div><div class="er" id="te"></div>
  <button onclick="saveInv(${i})">Simpan</button><button class="g" onclick="closeM()">Batal</button>`)}
-function saveInv(i){const n=$("#iv1").value.trim(),app=$("#iv2").value.trim(),u=rn(Math.max(0,+$("#iv3").value||0)),cs=$("#iv4").value.trim(),s=snap();
- if(i<0){const k=INK,pr=Math.max(0,+gv("#iv5",0)||0);S.invs.push({id:Date.now(),k,n:n||IT[k].t,app,u,c:cs===""?(u>0?null:0):Math.max(0,+cs),p:k=="gold"?pr/1000:pr,h:[]})}
- else{const v=S.invs[i];if(n)v.n=n;v.app=app;v.u=u;v.c=cs===""?(u>0?null:0):Math.max(0,+cs)}
+function saveInv(i){const n=$("#iv1").value.trim(),app=$("#iv2").value.trim(),u=rn(Math.max(0,+$("#iv3").value||0)),cs=$("#iv4").value.trim(),qs=$("#ivq").value,q=qs=="x"?+$("#ivq2").value:+qs,pr=Math.max(0,+$("#iv5").value||0),s=snap();
+ if(!(q>0)){terr("Isi satuan harga lebih dari 0.");return}
+ if(i<0){const k=INK;S.invs.push({id:Date.now(),k,n:n||IT[k].t,app,u,c:cs===""?(u>0?null:0):Math.max(0,+cs),p:pr,q,h:[]})}
+ else{const v=S.invs[i];if(n)v.n=n;v.app=app;v.u=u;v.c=cs===""?(u>0?null:0):Math.max(0,+cs);v.q=q;v.p=pr}
  closeM();FXS=s;go()}
 function openIH(i){const v=S.invs[i],un=unitOf(v),l=v.h.slice().sort((a,b)=>b.ts-a.ts);
  sheet(`<div class="row"><b>Riwayat ${esc(v.n)}</b><button class="g" onclick="closeM()">Tutup</button></div>${l.length?l.map(h=>`<div class="item row"><div style="min-width:0"><b>${h.t=="b"?"Beli":"Jual"} ${nf(h.u)} ${un}</b><div class="mu">${fmt(h.ts)}</div><div class="mu">@ ${rp(h.p)} per ${un}${h.acc?" · "+esc(h.acc):" · saldo tidak diubah"}</div>${h.t=="s"&&h.pl!=null?`<div class="${h.pl<0?"neg":"pos"}" style="font-size:13px">${h.pl<0?"Rugi":"Untung"} ${sg(h.pl)}</div>`:""}</div><div style="text-align:right"><b>${rp(h.tot)}</b><br><button class="g" onclick="undoAsk(${h.id})">Batalkan</button></div></div>`).join(""):`<div class="mu">Belum ada pembelian atau penjualan tercatat. Pakai tombol Beli / Jual.</div>`}`)}
@@ -858,23 +880,23 @@ function openTr(m,i,keep){TRM=m||TRM;if(i!=null)TRI=i;
    body=`<div><label>Investasi</label><select id="ti" onchange="TRI=+this.value;openTr('buy',TRI,2)">${vo(I.map((x,j)=>[j,x.n+" · "+itx(x).t]),sel)}</select></div>
    <div class="tog"><button class="${TM?"":"on"}" onclick="TM=0;openTr('buy',null,1)">Jumlah × harga</button><button class="${TM?"on":""}" onclick="TM=1;openTr('buy',null,1)">Total ÷ harga</button></div>
    <div class="f2">${TM?`<div><label>Total dibayar (Rp)</label><input id="tt" type="number" inputmode="numeric" oninput="trCalc()" value="${esc(keep?gv("#tt",""):"")}"></div>`:`<div><label>Jumlah (${un})</label><input id="tq" type="number" step="any" inputmode="decimal" oninput="trCalc()" value="${esc(keep?gv("#tq",""):"")}"></div>`}
-   <div><label>Harga beli per ${un} (Rp)</label><input id="tp" type="number" step="any" inputmode="decimal" oninput="trCalc()" value="${esc(pd)}" placeholder="${pu(v)?"jual skrg "+Math.round(pu(v)):"0"}"></div></div>
+   <div><label>Harga beli per ${ql(v)} (Rp)</label><input id="tp" type="number" step="any" inputmode="decimal" oninput="trCalc()" value="${esc(pd)}" placeholder="${v.p?"jual skrg "+v.p:"0"}"></div></div>
    <div class="val" id="trp"></div>
    <div><label>Dibayar dari akun</label><select id="ta2">${vo([["","Tidak kurangi saldo (hanya catat)"],...ao],keep?gv("#ta2",A[0]||""):(A[0]||""))}</select></div>${dt}
    <div class="er" id="te"></div><button onclick="saveTr()">Simpan pembelian</button>`}}
  else{
   const H=I.map((x,j)=>[j,x]).filter(x=>x[1].u>0);
   if(!H.length)body=`<div class="mu">Belum ada investasi dengan jumlah lebih dari 0 yang bisa dijual.</div>`;
-  else{const sv=I[TRI]&&I[TRI].u>0?TRI:H[0][0],v=I[sv],un=unitOf(v),pd=keep==1?gv("#tp",""):(pu(v)||"");
+  else{const sv=I[TRI]&&I[TRI].u>0?TRI:H[0][0],v=I[sv],un=unitOf(v),pd=keep==1?gv("#tp",""):(v.p||"");
    body=`<div><label>Investasi yang dijual</label><select id="ti" onchange="TRI=+this.value;openTr('sell',TRI,2)">${vo(H.map(([j,x])=>[j,x.n+" · punya "+nf(x.u)+" "+unitOf(x)]),sv)}</select></div>
    <div class="f2"><div><label>Jumlah dijual (${un})</label><input id="tq" type="number" step="any" inputmode="decimal" oninput="trCalc()" value="${esc(keep?gv("#tq",""):"")}"></div>
-   <div><label>Harga jual per ${un} (Rp)</label><input id="tp" type="number" step="any" inputmode="decimal" oninput="trCalc()" value="${esc(pd)}"></div></div>
+   <div><label>Harga jual per ${ql(v)} (Rp)</label><input id="tp" type="number" step="any" inputmode="decimal" oninput="trCalc()" value="${esc(pd)}"></div></div>
    <button class="g" style="justify-self:start" onclick="$('#tq').value=${v.u};trCalc()">Jual semua (${nf(v.u)} ${un})</button>
    <div class="val" id="trp"></div>
    <div><label>Hasil masuk ke akun</label><select id="ta2">${vo([["","Tidak tambah saldo (hanya catat)"],...ao],keep?gv("#ta2",A[0]||""):(A[0]||""))}</select></div>${dt}
    <div class="er" id="te"></div><button onclick="saveTr()">Simpan penjualan</button>`}}
  sheet(`<b>Pindah saldo &amp; investasi</b>${tg}${body}`);if(TRM!="acc")trCalc()}
-function trCalc(){const el=$("#trp"),v=S.invs[+gv("#ti",-1)];if(!el||!v)return;const un=unitOf(v),p=+gv("#tp",0)||0;let u,tot;
+function trCalc(){const el=$("#trp"),v=S.invs[+gv("#ti",-1)];if(!el||!v)return;const un=unitOf(v),p=(+gv("#tp",0)||0)/qv(v);let u,tot;
  if(TRM=="buy"){if(TM){tot=+gv("#tt",0)||0;u=p>0?tot/p:0}else{u=+gv("#tq",0)||0;tot=u*p}const cur=pu(v);
   el.innerHTML=u>0&&tot>0?`Dapat <b>${nf(u)} ${un}</b> · total <b>${rp(tot)}</b>${cur>0&&p>0?`<div class="mu" style="font-size:12px">Harga jual sekarang ${rp(cur)} per ${un}. ${p>cur?"Harga beli lebih mahal "+rp(p-cur)+" ("+pc((p-cur)/cur*100)+"), jadi nilai jualnya langsung di bawah modal.":"Harga beli tidak lebih mahal dari harga jual."}</div>`:""}`:`<span class="mu">Isi jumlah dan harga untuk melihat totalnya.</span>`}
  else{u=+gv("#tq",0)||0;tot=u*p;const cost=v.c!=null&&v.u>0?v.c*Math.min(1,u/v.u):null;
@@ -885,11 +907,11 @@ function saveTr(){const dt=new Date(gv("#tw","")),ts=isNaN(dt)?Date.now():dt.get
   S.tx.push({...L(tid+1),type:"out",d:"Pindah ke "+b,v,acc:a,cat:"Pindah saldo"},{...L(tid+2),type:"in",d:"Pindah dari "+a,v,acc:b,cat:"Pindah saldo"});
   if(fee>0)S.tx.push({id:tid+3,...stamp(ts),type:"out",d:"Biaya admin "+a+" ke "+b,v:fee,acc:a,cat:"Di luar anggaran"});
   closeM();FXS=s;toast("Saldo dipindahkan");go();return}
- const v=S.invs[+gv("#ti",-1)];if(!v){terr("Pilih investasi dulu.");return}const un=unitOf(v),p=+gv("#tp",0)||0,acc=gv("#ta2","");
+ const v=S.invs[+gv("#ti",-1)];if(!v){terr("Pilih investasi dulu.");return}const un=unitOf(v),pq=+gv("#tp",0)||0,p=pq/qv(v),acc=gv("#ta2","");
  if(!(p>0)){terr("Harga harus lebih dari 0.");return}
  if(TRM=="buy"){let u,tot;if(TM){tot=+gv("#tt",0)||0;u=tot/p}else{u=+gv("#tq",0)||0;tot=u*p}
   if(!(u>0)||!(tot>0)){terr("Jumlah dan total harus lebih dari 0.");return}
-  u=rn(u);tot=Math.round(tot);if(v.c==null&&v.u<=0)v.c=0;if(v.c!=null)v.c+=tot;v.u=rn(v.u+u);if(!(v.p>0))v.p=v.k=="gold"?p/1000:p;
+  u=rn(u);tot=Math.round(tot);if(v.c==null&&v.u<=0)v.c=0;if(v.c!=null)v.c+=tot;v.u=rn(v.u+u);if(!(v.p>0))v.p=pq;
   v.h.push({id:tid,ts,t:"b",u,p:tot/u,tot,acc,du:u,dc:tot});
   if(acc)S.tx.push({...L(tid+1),type:"out",d:"Beli "+v.n+" "+nf(u)+" "+un,v:tot,acc,cat:"Investasi",note:"@ "+rp(tot/u)+" per "+un});
   toast("Pembelian dicatat")}
@@ -912,13 +934,23 @@ function setTheme(x){R.theme=x;if(x=="auto")delete document.documentElement.data
 function harta(c){const P=R.prof,th=R.theme||"auto";
  return `${P?`<div class="card"><h2>Profil &amp; keamanan</h2>${photoUI()}<label>Nama</label><input value="${esc(P.name)}" maxlength="24" onchange="R.prof.name=this.value.trim()||R.prof.name;go()">
  <label style="margin-top:10px">Tanggal lahir</label><input type="date" value="${esc(P.birth||"")}" max="${ymd(new Date())}" onchange="R.prof.birth=this.value;save()">
- <div class="f2" style="margin-top:12px"><button class="gl" onclick="chPin()">Ganti PIN</button><button class="gl" onclick="lock()">Kunci sekarang</button></div></div>`:""}
+ <div class="f2" style="margin-top:12px"><button class="gl" onclick="chPin()">Ganti PIN</button><button class="gl" onclick="lock()">Kunci sekarang</button></div><button class="gl w" onclick="sqAsk()">Pertanyaan keamanan${P.sq?"":" (belum diatur)"}</button></div>`:""}
  <div class="card"><h2>Fitur keuangan</h2><div class="sub">Alat bantu untuk mengatur uangmu.</div>
  ${mrow("Analitik","Grafik bulanan, kategori terbesar, dan penyebab minus","openAN()")}${mrow("Aset &amp; target","Akun, investasi, untung/rugi, dan pindah saldo","openAP()")}</div>
  <div class="card"><h2>Pengaturan</h2><label>Tampilan</label><div class="tog">${[["auto","Otomatis"],["light","Terang"],["dark","Gelap"]].map(x=>`<button class="${th==x[0]?"on":""}" onclick="setTheme('${x[0]}')">${x[1]}</button>`).join("")}</div>
  <label class="ck" style="margin-top:12px"><input type="checkbox" ${R.mute?"":"checked"} onchange="R.mute=!this.checked;save()"><span>Suara &amp; getar saat uang masuk</span></label></div>${bk()}`}
 
 /* ---------- Analitik ---------- */
+let TDIR=0;
+function navRender(snap){const n=$("#nav"),ix=Math.max(0,TABS.findIndex(t=>t[0]==S.tab));
+ if(!n.dataset.b){n.innerHTML=`<i class="pill"></i>`+TABS.map(t=>`<button onclick="S.tab='${t[0]}';AN=1;go()">${t[1]}</button>`).join("");n.dataset.b=1}
+ const bs=n.querySelectorAll("button"),p=n.querySelector(".pill"),b=bs[ix],first=n.dataset.i===undefined,prev=first?ix:+n.dataset.i;
+ bs.forEach((x,i)=>x.classList.toggle("on",i==ix));
+ const put=()=>{p.style.width=b.offsetWidth+"px";p.style.transform=`translateX(${b.offsetLeft}px)`};
+ if(first||snap){p.style.transition="none";put();void p.offsetWidth;p.style.transition=""}
+ else if(prev!=ix){put();try{p.animate([{scale:"1 1"},{scale:"1.16 .9",offset:.35},{scale:"1 1"}],{duration:600,easing:"ease-out"})}catch(e){}}
+ TDIR=first?0:Math.sign(ix-prev);n.dataset.i=ix}
+addEventListener("resize",()=>{if(S&&!$("nav").style.display)navRender(1)});
 function mStat(y,m){const a=S.tx.filter(t=>t.m==m&&yr(t)==y&&!t.ln),i=sm(a.filter(t=>t.type=="in"),t=>t.v),o=sm(a.filter(t=>t.type=="out"),t=>t.v);return{y,m,i,o,s:i-o,a}}
 function lastMonths(n){const d=new Date(),out=[];let y=d.getFullYear(),m=d.getMonth();for(let k=0;k<n;k++){out.unshift(mStat(y,m));if(--m<0){m=11;y--}}return out}
 const prevM=x=>{let y=x.y,m=x.m-1;if(m<0){m=11;y--}return mStat(y,m)};
