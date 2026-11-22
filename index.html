@@ -72,7 +72,7 @@ label{font-size:12px;color:var(--mu);display:block;margin-bottom:3px}
 .er{color:var(--ng);font-size:13px;min-height:18px;margin-top:6px}
 
 /* ===== animasi transaksi: label +/- melayang, bar mengisi, flash hijau/merah ===== */
-.fl{position:absolute;z-index:4;pointer-events:none;font-weight:800;font-size:13px;padding:3px 10px;border-radius:12px;background:rgba(255,255,255,.96);box-shadow:0 4px 14px rgba(0,0,0,.22);white-space:nowrap;font-variant-numeric:tabular-nums;animation:flt 2.3s cubic-bezier(.2,.8,.2,1) forwards}
+.fl{position:absolute;z-index:4;pointer-events:none;font-weight:800;font-size:13px;padding:3px 10px;border-radius:12px;background:rgba(255,255,255,.96);box-shadow:0 4px 14px rgba(0,0,0,.22);white-space:nowrap;font-variant-numeric:tabular-nums;animation:flt 3.8s cubic-bezier(.2,.8,.2,1) forwards}
 .fl.up{color:#067a4b}.fl.dn{color:#c9163f}
 .fl.tr{right:14px;top:10px}.fl.ti{right:0;top:-4px}.fl.inl{position:relative}
 .tip{position:absolute;top:-30px;transform:translateX(-50%);z-index:4;pointer-events:none}
@@ -80,8 +80,8 @@ label{font-size:12px;color:var(--mu);display:block;margin-bottom:3px}
 .bar i::before{content:"";position:absolute;top:0;bottom:0;width:45%;left:-45%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);opacity:0}
 .bar i::after{content:"";position:absolute;inset:0;border-radius:inherit;background:var(--fx,#2fe38f);opacity:0}
 .bar i.up{--fx:#2fe38f}.bar i.dn{--fx:#ff4d6d}
-.bar i.fx::after{animation:fxf 1.9s ease both}
-.bar i.fx::before{animation:shn 1.3s ease-in-out .1s 1 both}
+.bar i.fx::after{animation:fxf 3.2s ease both}
+.bar i.fx::before{animation:shn 2.2s ease-in-out .1s 1 both}
 @keyframes fxf{0%{opacity:0}15%{opacity:.95}65%{opacity:.95}100%{opacity:0}}
 @keyframes shn{0%{left:-45%;opacity:1}100%{left:110%;opacity:1}}
 
@@ -137,13 +137,21 @@ label{font-size:12px;color:var(--mu);display:block;margin-bottom:3px}
 @keyframes ltr{from{opacity:0;transform:translateY(26px) scale(.5)}}
 .sp-in .tg{font-size:13px;opacity:0;animation:up .6s ease 2.3s both;margin-top:6px}
 .sp-in .tp{font-size:11px;opacity:0;animation:up .6s ease 3s both;margin-top:26px}
+*{-webkit-tap-highlight-color:transparent}button{outline:0;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+html,body{overscroll-behavior-y:contain}:root{padding:0!important}
+body{min-height:100vh;min-height:100dvh;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}body.pk #wrap{padding-bottom:28px}
+.plus{display:grid;place-items:center}.plus svg{display:block}
+.mh{background:var(--field);border-radius:14px;padding:8px 12px;margin:12px 0 2px}.mh b{font-size:14px}.mh .row b{font-size:13px}
+#ptr{position:fixed;top:8px;left:50%;transform:translate(-50%,-60px);z-index:80;background:rgba(20,24,58,.9);color:#fff;font-size:13px;font-weight:600;padding:7px 16px;border-radius:18px;pointer-events:none;transition:transform .15s}
+.hero.gold .sk{animation:tw1 8.8s ease-in-out var(--d) infinite}
+@keyframes tw1{0%{opacity:0;transform:scale(0) rotate(0)}5%{opacity:1;transform:scale(var(--z)) rotate(45deg)}11%{opacity:0;transform:scale(0) rotate(100deg)}100%{opacity:0;transform:scale(0) rotate(100deg)}}
 </style></head><body>
 <div id="wrap">
 <header><div><h1>Moneysev</h1><div class="mu" id="sub"></div></div>
-<div id="ctl"><select id="ms" onchange="S.m=+this.value;AN=1;go()"></select><select id="ys" onchange="S.y=+this.value;AN=1;go()"></select>
-<button class="gl ic" id="sbtn" onclick="openSearch()" aria-label="Cari transaksi"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button></div></header>
+<div id="ctl"><select id="ms" onchange="const q=this.value.split('-');S.y=+q[0];S.m=+q[1];AN=1;go()"></select>
+<button class="gl ic" id="sbtn" onclick="openSearch()" aria-label="Cari transaksi"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button><button class="gl sm" id="swb" onclick="askBack()" hidden>Ganti dompet</button></div></header>
 <div id="app"></div></div>
-<button class="plus" id="plus" onclick="openM()" aria-label="Catat transaksi">+</button>
+<button class="plus" id="plus" onclick="openM()" aria-label="Catat transaksi"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
 <nav id="nav"></nav>
 <div id="modal"></div>
 <div id="srch" class="scr" hidden><div class="sbar"><input id="sq" type="search" placeholder="Cari riwayat: nama, kategori, akun, nominal..." oninput="renderSR()" autocomplete="off"><button class="g" onclick="closeSearch()">Tutup</button></div><div id="sres"></div></div>
@@ -171,12 +179,13 @@ const lt=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad
 const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const fmt=ts=>new Date(ts).toLocaleString("id-ID",{weekday:"short",day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}).replace(/(\d)\.(\d)/,"$1:$2");
 const stamp=ts=>{const d=new Date(ts);return{ts,m:d.getMonth(),y:d.getFullYear()}};
-const mk=n=>{const d=new Date();return{id:Date.now(),name:n,m:d.getMonth(),y:d.getFullYear(),tab:"home",target:5000000,goal:"",accs:["Cash"],open:{},bud:[],gold:{g:0,p:2224},rd:{u:0,nab:2000},loans:[],tx:[]}};
+const mk=n=>{const d=new Date();return{id:Date.now(),name:n,m:d.getMonth(),y:d.getFullYear(),tab:"home",target:5000000,goal:"",accs:["Cash"],open:{},bud:[],invs:[{id:1,k:"gold",n:"Emas",u:0,p:2224}],loans:[],tx:[]}};
 let R=null,S=null,T="out",E=0,AN=1,PH=null,FXS=null,SR=0;
 try{R=JSON.parse(localStorage.getItem(KEY))}catch(e){}
 if(!R){R={ds:[]};try{const o=JSON.parse(localStorage.getItem("moneysev-v1"));
  if(o&&o.accs){o.name="Utama";o.id=1;o.tab="home";if(o.gold&&o.gold.p>100000)o.gold.p/=1000;delete o.demo;R.ds.push(o)}}catch(e){}}
 if(!R.ds)R.ds=[];
+R.ds.forEach(D=>{if(!D.invs){D.invs=[];if(D.gold)D.invs.push({id:1,k:"gold",n:"Emas",u:D.gold.g||0,p:D.gold.p||2224});if(D.rd&&D.rd.u>0)D.invs.push({id:2,k:"rd",n:"Reksa Dana",u:D.rd.u,p:D.rd.nab});delete D.gold;delete D.rd}});
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(R))}catch(e){}};
 const opts=(l,sel)=>l.map(a=>`<option ${a==sel?"selected":""}>${esc(a)}</option>`).join("");
 const vo=(l,sel)=>l.map(a=>`<option value="${esc(a[0])}" ${a[0]==sel?"selected":""}>${esc(a[1])}</option>`).join("");
@@ -190,40 +199,40 @@ function toast(m){const t=document.createElement("div");t.className="toast";t.te
 function C(D){D=D||S;
  const bal={};D.accs.forEach(a=>bal[a]=D.open[a]||0);
  D.tx.forEach(t=>{if(bal[t.acc]!==undefined)bal[t.acc]+=t.type=="in"?t.v:-t.v});
- const liq=D.accs.reduce((s,a)=>s+bal[a],0),gold=D.gold.g*1000*D.gold.p,rd=D.rd.u*D.rd.nab,non=gold+rd,aset=liq+non;
+ const liq=D.accs.reduce((s,a)=>s+bal[a],0),non=D.invs.reduce((s,i)=>s+iv(i),0),aset=liq+non;
  const mt=D.tx.filter(t=>inM(t,D)&&!t.ln),inc=sum(mt.filter(t=>t.type=="in")),outs=mt.filter(t=>t.type=="out"),exp=sum(outs);
  const rows=D.bud.map(b=>{const r=sum(outs.filter(t=>t.cat==b.n));return{...b,r,s:b.a-r}});
- const nm=D.bud.map(b=>b.n),out=sum(outs.filter(t=>!nm.includes(t.cat))),sur=inc-exp;let est;
- if(D.target>0&&aset>=D.target)est="Target tercapai";else if(sur<=0)est="Pemasukan kurang";else est=Math.ceil((D.target-aset)/sur)+" bulan lagi";
+ const nm=D.bud.map(b=>b.n),out=sum(outs.filter(t=>!nm.includes(t.cat))),sur=inc-exp;const nw_=new Date(),cm_=D.tx.filter(t=>!t.ln&&t.m==nw_.getMonth()&&yr(t)==nw_.getFullYear()),csur=sum(cm_.filter(t=>t.type=="in"))-sum(cm_.filter(t=>t.type=="out")),al=D.tx.filter(t=>!t.ln),ti=sum(al.filter(t=>t.type=="in")),te=sum(al.filter(t=>t.type=="out"));let est;
+ if(D.target>0&&aset>=D.target)est="Target tercapai";else if(csur<=0)est="Pemasukan kurang";else est=Math.ceil((D.target-aset)/csur)+" bulan lagi";
  const sisa=l=>l.v-l.paid,H=D.loans.filter(l=>l.t=="h"),P=D.loans.filter(l=>l.t=="p");
- return{bal,liq,gold,rd,non,aset,mt,inc,exp,rows,out,sur,est,H,P,hs:H.reduce((s,l)=>s+sisa(l),0),ps:P.reduce((s,l)=>s+sisa(l),0)}}
+ return{bal,liq,non,ti,te,ts:ti-te,aset,mt,inc,exp,rows,out,sur,est,H,P,hs:H.reduce((s,l)=>s+sisa(l),0),ps:P.reduce((s,l)=>s+sisa(l),0)}}
 
 /* ---------- penanda angka & bar yang bisa dianimasikan ---------- */
 const cn=(k,v,o={})=>`<span data-cn="${esc(k)}" data-v="${v}"${o.f?` data-f="${o.f}"`:""}${o.fl?` data-fl="${o.fl}"`:""}>${o.t||rp(v)}</span>`;
 const barH=(k,p,o={})=>`<div class="bw"><div class="bar"><i data-bk="${esc(k)}" data-v="${p}"${o.inv?` data-inv="1"`:""}${o.pill?` data-pill="1"`:""} class="${o.cls||""}" style="width:${p}%"></i></div></div>`;
-function snap(){const c=C(),k={aset:c.aset,liq:c.liq,non:c.non,pct:pct(c.aset),inc:c.inc,exp:c.exp,sur:c.sur,out:c.out};
+function snap(){const c=C(),k={aset:c.aset,liq:c.liq,non:c.non,pct:pct(c.aset),inc:c.inc,exp:c.exp,sur:c.sur,out:c.out,ti:c.ti,te:c.te,ts:c.ts};
  c.rows.forEach(b=>{k["b:"+b.n]=b.r;k["s:"+b.n]=b.s;k["bp:"+b.n]=b.a?Math.min(100,b.r/b.a*100):0});return{m:S.m,y:S.y,k}}
-function count(el,from,to,f){const t0=performance.now(),ms=1500,fm=f=="pct"?n=>n.toFixed(0)+"%":rp;
+function count(el,from,to,f){const t0=performance.now(),ms=2600,fm=f=="pct"?n=>n.toFixed(0)+"%":rp;
  const st=now=>{if(!el.isConnected)return;const k=Math.min(1,(now-t0)/ms),e=1-Math.pow(1-k,3);el.textContent=fm(k<1?from+(to-from)*e:to);if(k<1)requestAnimationFrame(st)};
  el.textContent=fm(from);requestAnimationFrame(st)}
-function flt(c,t,cls,kind){if(!c)return;const f=document.createElement("span");f.className="fl "+cls+" "+(kind=="hero"?"tr":"ti");f.textContent=t;c.appendChild(f);setTimeout(()=>f.remove(),2500)}
+function flt(c,t,cls,kind){if(!c)return;const f=document.createElement("span");f.className="fl "+cls+" "+(kind=="hero"?"tr":"ti");f.textContent=t;c.appendChild(f);setTimeout(()=>f.remove(),3900)}
 function runFX(s){const same=s.m==S.m&&s.y==S.y;
- const get=k=>{if(!(k in s.k))return null;if(!/^(aset|liq|non|pct)$/.test(k)&&!same)return null;return s.k[k]};
+ const get=k=>{if(!(k in s.k))return null;if(!/^(aset|liq|non|pct|ti|te|ts)$/.test(k)&&!same)return null;return s.k[k]};
  document.querySelectorAll("[data-cn]").forEach(el=>{const to=+el.dataset.v,from=get(el.dataset.cn);if(from==null||Math.abs(from-to)<1e-9)return;
   count(el,from,to,el.dataset.f);
   if(el.dataset.fl){const d=to-from;flt(el.closest(el.dataset.fl=="hero"?".hero":".item"),(d>0?"+":"")+rp(d),d>0?"up":"dn",el.dataset.fl)}});
  document.querySelectorAll("[data-bk]").forEach(el=>{const to=+el.dataset.v,from=get(el.dataset.bk);if(from==null||Math.abs(from-to)<1e-9)return;
   el.style.transition="none";el.style.width=from+"%";void el.offsetWidth;
-  el.style.transition="width 1.5s cubic-bezier(.22,.8,.2,1)";el.style.width=to+"%";
+  el.style.transition="width 2.6s cubic-bezier(.22,.8,.2,1)";el.style.width=to+"%";
   const up=(to>from)!=!!el.dataset.inv;el.classList.remove("up","dn","fx");void el.offsetWidth;el.classList.add(up?"up":"dn","fx");
   if(el.dataset.pill){const w=el.closest(".bw"),d=to-from,tx=(d>0?"+":"-")+(Math.round(Math.abs(d)*10)/10)+"%",tip=document.createElement("span"),cl=v=>`clamp(30px,${v}%,calc(100% - 30px))`;
    tip.className="tip";tip.style.left=cl(from);tip.innerHTML=`<span class="fl inl ${d>0?"up":"dn"}">${tx}</span>`;w.appendChild(tip);void tip.offsetWidth;
-   tip.style.transition="left 1.5s cubic-bezier(.22,.8,.2,1)";tip.style.left=cl(to);setTimeout(()=>tip.remove(),2500)}});
+   tip.style.transition="left 2.6s cubic-bezier(.22,.8,.2,1)";tip.style.left=cl(to);setTimeout(()=>tip.remove(),3900)}});
  /* kotak emas: muncul setelah bar penuh */
- const h=$(".hero.gold");if(h&&(s.k.pct||0)<100){h.classList.remove("gold");setTimeout(()=>{if(!h.isConnected)return;h.classList.add("gold");h.animate([{filter:"brightness(2.4) saturate(.4)"},{filter:"none"}],{duration:1000,easing:"ease-out"})},1550)}}
+ const h=$(".hero.gold");if(h&&(s.k.pct||0)<100){h.classList.remove("gold");setTimeout(()=>{if(!h.isConnected)return;h.classList.add("gold");h.animate([{filter:"brightness(2.4) saturate(.4)"},{filter:"none"}],{duration:1000,easing:"ease-out"})},2700)}}
 
 /* ---------- confetti dari bawah layar meledak ke atas ---------- */
-function confetti(){if($("#cf"))return;const cv=document.createElement("canvas");cv.id="cf";document.body.appendChild(cv);
+function confetti(){if($("#cf"))return;sparkle();const cv=document.createElement("canvas");cv.id="cf";document.body.appendChild(cv);
  const dpr=Math.min(2,devicePixelRatio||1),W=innerWidth,H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;const x=cv.getContext("2d");x.scale(dpr,dpr);
  const cols=["#ff4d6d","#ffd23f","#3ddc9b","#4cc9f0","#a77bff","#ff9f1c","#ffffff","#ff7bd5"],g=1500,P=[],vmax=Math.sqrt(2*g*H)*1.12;
  [[0,.5,110],[.28,.18,80],[.28,.82,80],[.6,.35,70],[.6,.65,70]].forEach(([dl,fx,n])=>{for(let i=0;i<n;i++){const sp=vmax*(.42+Math.random()*.62);
@@ -248,12 +257,12 @@ function ask(msg,fn,sub){if(R.skip&&Date.now()<R.skip){fn();return}
 function yes(){if($("#nk")&&$("#nk").checked){R.skip=Date.now()+3600000;save()}const f=CBF;CBF=null;closeM();if(f)f()}
 
 /* ---------- filter & urut riwayat ---------- */
-const FL0=()=>({sort:"new",type:"all",cat:"all",acc:"all",range:"month",from:"",to:""});
+const FL0=()=>({sort:"new",type:"all",cat:"all",acc:"all",range:"all",from:"",to:""});
 let FL=FL0();
-const fN=()=>(FL.sort!="new")+(FL.type!="all")+(FL.cat!="all")+(FL.acc!="all")+(FL.range!="month");
+const fN=()=>(FL.sort!="new")+(FL.type!="all")+(FL.cat!="all")+(FL.acc!="all")+(FL.range!="all");
 const tsOf=t=>t.ts||t.id;
 function applyF(list){let l=list.slice();
- if(FL.range=="month")l=l.filter(t=>inM(t,S));
+ if(FL.range=="month"){const n=new Date();l=l.filter(t=>t.m==n.getMonth()&&yr(t)==n.getFullYear())}
  else if(FL.range=="custom"){const a=FL.from?new Date(FL.from+"T00:00:00").getTime():-Infinity,b=FL.to?new Date(FL.to+"T23:59:59.999").getTime():Infinity;l=l.filter(t=>tsOf(t)>=a&&tsOf(t)<=b)}
  if(FL.type!="all")l=l.filter(t=>t.type==FL.type);
  if(FL.cat!="all")l=l.filter(t=>FL.cat=="__none"?!t.cat:t.cat==FL.cat);
@@ -265,14 +274,14 @@ function openF(){const cs=[...new Set([...S.bud.map(b=>b.n),"Di luar anggaran",.
  <div><label>Jenis</label><select id="fy">${vo([["all","Semua"],["in","Pemasukan"],["out","Pengeluaran"]],FL.type)}</select></div>
  <div class="f2"><div><label>Kategori</label><select id="fc2">${vo([["all","Semua"],["__none","Tanpa kategori"],...cs.map(c=>[c,c])],FL.cat)}</select></div>
  <div><label>Akun</label><select id="fa">${vo([["all","Semua"],...S.accs.map(a=>[a,a])],FL.acc)}</select></div></div>
- <div><label>Periode</label><select id="fr" onchange="$('#dr').style.display=this.value=='custom'?'':'none'">${vo([["month","Bulan "+MN[S.m]+" "+S.y],["all","Semua waktu"],["custom","Pilih tanggal"]],FL.range)}</select></div>
+ <div><label>Periode</label><select id="fr" onchange="$('#dr').style.display=this.value=='custom'?'':'none'">${vo([["all","Semua waktu"],["month","Bulan ini"],["custom","Pilih tanggal"]],FL.range)}</select></div>
  <div class="f2" id="dr" style="${FL.range=="custom"?"":"display:none"}"><div><label>Dari tanggal</label><input type="date" id="ff" value="${FL.from}"></div><div><label>Sampai tanggal</label><input type="date" id="ft" value="${FL.to}"></div></div>
  <div class="f2"><button class="gl" onclick="FL=FL0();closeM();go()">Reset</button><button onclick="applyFS()">Terapkan</button></div>`)}
 function applyFS(){FL={sort:$("#fs").value,type:$("#fy").value,cat:$("#fc2").value,acc:$("#fa").value,range:$("#fr").value,from:$("#ff").value,to:$("#ft").value};closeM();go()}
 
 /* ---------- riwayat ---------- */
-const txRow=t=>`<div class="item row"><div><b>${esc(t.d)}</b><div class="mu">${fmt(tsOf(t))}</div><div class="mu">${esc(t.acc)}${t.cat?" · "+esc(t.cat):""}${t.ph?` · <a href="#" style="color:var(--pr)" onclick="showPh(${t.id});return false">Lihat foto</a>`:""}</div></div>
- <div style="text-align:right"><b class="${t.type=="in"?"pos":"neg"}">${t.type=="in"?"+":"-"}${rp(t.v)}</b><br><button class="g" onclick="del(${t.id})">Hapus</button></div></div>`;
+const txRow=t=>`<div class="item row" style="cursor:pointer" onclick="openD(${t.id})"><div><b>${esc(t.d)}</b><div class="mu">${fmt(tsOf(t))}</div><div class="mu">${esc(t.acc)}${t.cat?" · "+esc(t.cat):""}${t.ph?" · Foto":""}</div></div>
+ <div style="text-align:right"><b class="${t.type=="in"?"pos":"neg"}">${t.type=="in"?"+":"-"}${rp(t.v)}</b><br><button class="g" onclick="event.stopPropagation();del(${t.id})">Hapus</button></div></div>`
 function openSearch(){if(!S)return;SR=1;$("#srch").hidden=false;$("#sq").value="";renderSR();setTimeout(()=>$("#sq").focus(),50)}
 function closeSearch(){SR=0;$("#srch").hidden=true}
 function renderSR(){const toks=($("#sq").value||"").trim().toLowerCase().split(/\s+/).filter(Boolean);
@@ -289,21 +298,21 @@ function pick(){
  ${cs.map((x,i)=>`<div class="item row" style="cursor:pointer" onclick="enter(${i})"><div><b>${esc(x.d.name)}</b><div class="mu">Saldo ${rp(x.c.liq)}</div></div>
  <div style="text-align:right"><b>${rp(x.c.aset)}</b><div class="mu">total uang</div><button class="g" onclick="event.stopPropagation();askDel(${i})">Hapus</button></div></div>`).join("")||`<div class="mu">Belum ada dompet. Buat yang pertama di bawah.</div>`}
  <div class="f2" style="margin-top:10px"><input id="dn" placeholder="Contoh: Multimedia"><button onclick="addD()">Buat dompet</button></div></div>`}
-function enter(i){S=R.ds[i];S.tab="home";const n=new Date();S.m=n.getMonth();S.y=n.getFullYear();FL=FL0();E=0;AN=1;go()}
+function enter(i){history.pushState({w:1},"");S=R.ds[i];S.tab="home";const n=new Date();S.m=n.getMonth();S.y=n.getFullYear();FL=FL0();E=0;AN=1;go()}
 function addD(){const n=$("#dn").value.trim();if(!n||R.ds.some(d=>d.name==n))return;R.ds.push(mk(n));AN=1;go()}
 function askDel(i){sheet(`<b>Hapus dompet ${esc(R.ds[i].name)}?</b><div class="mu">Semua akun, transaksi, dan hutang di dalamnya ikut terhapus.</div><button style="background:var(--ng)" onclick="R.ds.splice(${i},1);closeM();go()">Hapus dompet</button><button class="g" onclick="closeM()">Batal</button>`)}
-const SK=Array.from({length:14},(_,i)=>`<s class="sk" style="left:${(i*37+11)%94}%;top:${(i*53+7)%88}%;--d:${((i*29)%24)/10}s;--z:${(.7+((i*13)%9)/10).toFixed(1)}"></s>`).join("");
+const SK=Array.from({length:8},(_,i)=>`<s class="sk" style="left:${(i*37+11)%88}%;top:${(i*53+9)%80}%;--d:${(i*1.1).toFixed(1)}s;--z:${(.8+((i*13)%7)/10).toFixed(1)}"></s>`).join("");
 function home(c){
- const p=pct(c.aset),gold=S.target>0&&c.aset>=S.target,l=applyF(S.tx),n=fN(),ci=l.filter(t=>t.type=="in"&&!t.ln),title=FL.range=="month"?`Riwayat ${MN[S.m]} ${S.y}`:FL.range=="all"?"Riwayat semua waktu":"Riwayat tanggal pilihan";
+ const p=pct(c.aset),gold=S.target>0&&c.aset>=S.target,l=applyF(S.tx),n=fN(),ci=l.filter(t=>t.type=="in"&&!t.ln),title=FL.range=="month"?"Riwayat bulan ini":FL.range=="all"?"Riwayat transaksi":"Riwayat tanggal pilihan";
  return `<div class="card hero${gold?" gold":""}"${gold?` onclick="confetti()"`:""}>${SK}<small>Total aset</small><div class="big">${cn("aset",c.aset,{fl:"hero"})}</div>
  <div class="row"><small>Liquid Assets<br><b>${cn("liq",c.liq)}</b></small><small style="text-align:right">Non Liquid Assets<br><b>${cn("non",c.non)}</b></small></div>
  <div class="row" style="margin-top:14px"><small>${esc(S.goal||"Target")} · ${rp(S.target)}</small><small>${cn("pct",p,{f:"pct",t:p.toFixed(0)+"%"})}</small></div>
  ${barH("pct",p,{pill:1})}<small>${gold?"Target tercapai!":"Estimasi tercapai: <b>"+c.est+"</b>"}</small></div>
- <div class="card"><div class="row"><div><div class="mu">Pemasukan ${MN[S.m]}</div><b class="pos">${cn("inc",c.inc)}</b></div>
- <div><div class="mu">Pengeluaran</div><b class="neg">${cn("exp",c.exp)}</b></div><div><div class="mu">Sisa</div><b>${cn("sur",c.sur)}</b></div></div></div>
+ <div class="card"><div class="row"><div><div class="mu">Pemasukan</div><b class="pos">${cn("ti",c.ti)}</b></div>
+ <div><div class="mu">Pengeluaran</div><b class="neg">${cn("te",c.te)}</b></div><div><div class="mu">Sisa</div><b>${cn("ts",c.ts)}</b></div></div></div>
  <div class="card"><div class="row"><h2>${title}</h2><button class="gl sm" onclick="openF()">Filter / Urutkan${n?` (${n})`:""}</button></div>
  ${n||FL.range=="custom"?`<div class="sub">${l.length} transaksi · masuk ${rp(sum(l.filter(t=>t.type=="in")))} · keluar ${rp(sum(l.filter(t=>t.type=="out")))} <button class="g" onclick="FL=FL0();go()">Reset</button></div>`:""}
- ${l.length?l.map(txRow).join(""):`<div class="mu" style="margin-top:8px">${n?"Tidak ada transaksi yang cocok dengan filter.":"Belum ada transaksi bulan ini. Ketuk tombol + untuk mencatat."}</div>`}</div>`}
+ ${l.length?hist(l):`<div class="mu" style="margin-top:8px">${n?"Tidak ada transaksi yang cocok dengan filter.":"Belum ada transaksi. Ketuk tombol + untuk mencatat."}</div>`}</div>`}
 function rmB(i){ask(`Hapus kategori ${esc(S.bud[i].n)}?`,()=>{S.bud.splice(i,1);go()})}
 function rmA(i){ask(`Hapus akun ${esc(S.accs[i])}?`,()=>{S.accs.splice(i,1);go()})}
 function bud(c){
@@ -313,32 +322,28 @@ function bud(c){
  ${barH("bp:"+b.n,q,{inv:1,cls:b.r>b.a?"ov":""})}<div class="mu">Sisa anggaran ${cn("s:"+b.n,b.s,{fl:"item"})}</div></div>`}).join("")}
  ${E?`<div class="f2" style="margin-top:8px"><input id="bn" placeholder="Nama kategori"><input id="ba" type="number" inputmode="numeric" placeholder="Anggaran"></div><button class="w" onclick="addB()">Tambah kategori</button>`:""}
  <div class="item row"><b>Di luar anggaran</b><span class="${c.out?"neg":"mu"}">${cn("out",c.out)}</span></div>
- <div class="item row"><span class="mu">Rata-rata pengeluaran harian</span><b>${rp(c.exp/30)}</b></div></div>`}
+ <div class="item row"><span class="mu">Rata-rata pengeluaran harian selama sebulan<br><small>${MN[S.m]}: total pengeluaran ÷ ${DM()} hari</small></span><b>${rp(c.exp/DM())}</b></div></div>`}
 function harta(c){
- const gs=S.gold.g.toLocaleString("id-ID",{maximumFractionDigits:4}),P=R.prof;
- return `<div class="row" style="margin-bottom:12px"><div><div class="mu">Dompet aktif</div><b>${esc(S.name)}</b></div><button onclick="S=null;AN=1;go()">Ganti dompet</button></div>
- <div class="card"><div class="row"><h2>Liquid Assets</h2><b>${rp(c.liq)}</b></div><div class="sub">Uang yang bisa langsung dipakai: akun, rekening, e-wallet.</div>
+ const P=R.prof;
+ return `<div class="card"><div class="row"><h2>Liquid Assets</h2><b>${rp(c.liq)}</b></div><div class="sub">Uang yang bisa langsung dipakai: akun, rekening, e-wallet.</div>
  ${S.accs.map((a,i)=>`<div class="item f row"><div><b>${esc(a)}</b><div class="mu">Saldo awal <input type="number" inputmode="numeric" style="width:120px;padding:4px 8px" value="${S.open[a]||0}" onchange="S.open[S.accs[${i}]]=+this.value;go()"></div></div>
  <div style="text-align:right"><b>${rp(c.bal[a])}</b>${S.tx.some(t=>t.acc==a)||S.loans.some(l=>l.acc==a)?"":`<br><button class="g" onclick="rmA(${i})">Hapus</button>`}</div></div>`).join("")}
  <div class="f2" style="margin-top:8px"><input id="an" placeholder="Akun baru, mis. BRI"><button onclick="addA()">Tambah akun</button></div></div>
- <div class="card"><div class="row"><h2>Non Liquid Assets</h2><b>${rp(c.non)}</b></div><div class="sub">Aset yang perlu dijual dulu sebelum jadi uang: emas dan reksa dana.</div>
- <b>Emas</b><div class="val row"><span class="mu">Jumlah ${gs} g<br>Nilai jual</span><b>${rp(c.gold)}</b></div>
- <div class="f2"><div><label>Jumlah emas (gram)</label><input type="number" step="any" value="${S.gold.g}" onchange="S.gold.g=+this.value;go()"></div><div><label>Harga jual per 0,001 g</label><input type="number" step="any" value="${S.gold.p}" onchange="S.gold.p=+this.value;go()"></div></div>
- <div class="mu" style="margin-top:4px">Sama dengan ${rp(S.gold.p*1000)} per gram</div>
- <b style="display:block;margin-top:14px">Reksa Dana</b><div class="val row"><span class="mu">Nilai (unit × NAB)</span><b>${rp(c.rd)}</b></div>
- <div class="f2"><div><label>Jumlah unit</label><input type="number" step="any" value="${S.rd.u}" onchange="S.rd.u=+this.value;go()"></div><div><label>NAB sekarang</label><input type="number" step="any" value="${S.rd.nab}" onchange="S.rd.nab=+this.value;go()"></div></div></div>
+ <div class="card"><div class="row"><h2>Non Liquid Assets</h2><b>${rp(c.non)}</b></div><div class="sub">Aset yang perlu dijual dulu: emas, reksa dana, dan lainnya.</div>
+ ${S.invs.map((v,i)=>`<div class="item"><div class="row"><b>${esc(v.n)}</b><b>${rp(iv(v))}</b></div><div class="f2" style="margin-top:6px"><div><label>${v.k=="gold"?"Jumlah (gram)":"Jumlah unit"}</label><input type="number" step="any" value="${v.u||""}" placeholder="0" onchange="S.invs[${i}].u=+this.value;go()"></div><div><label>${v.k=="gold"?"Harga jual per 0,001 g":"Harga/NAB per unit"}</label><input type="number" step="any" value="${v.p}" onchange="S.invs[${i}].p=+this.value;go()"></div></div>${v.k=="gold"?`<div class="mu">Sama dengan ${rp(v.p*1000)} per gram</div>`:""}<button class="g" onclick="rmI(${i})">Hapus</button></div>`).join("")||`<div class="mu">Belum ada investasi.</div>`}
+ <div class="f2" style="margin-top:8px"><input id="in" placeholder="Nama, mis. Reksa Dana"><select id="ik"><option value="gold">Emas (gram)</option><option value="o">Lainnya (unit)</option></select></div><button class="w" onclick="addI()">Tambah investasi</button></div>
  <div class="card"><h2>Target tabungan</h2><div class="sub">Tujuan menabungmu. Bisa kamu ubah kapan saja.</div>
  <label>Tujuan menabung</label><input value="${esc(S.goal||"")}" placeholder="Contoh: Beli iPhone 18" maxlength="60" onchange="S.goal=this.value.trim();S.done=0;go()">
  <label style="margin-top:10px">Target nominal (Rp)</label><input type="number" inputmode="numeric" value="${S.target}" onchange="S.target=+this.value;S.done=0;go()">
  <div class="mu" style="margin-top:6px">Progres ${pct(c.aset).toFixed(0)}% · ${rp(c.aset)} dari ${rp(S.target)}</div></div>
  ${P?`<div class="card"><h2>Profil &amp; keamanan</h2><label>Nama</label><input value="${esc(P.name)}" maxlength="24" onchange="R.prof.name=this.value.trim()||R.prof.name;go()">
  <label style="margin-top:10px">Tanggal lahir</label><input type="date" value="${esc(P.birth||"")}" max="${ymd(new Date())}" onchange="R.prof.birth=this.value;save()">
- <div class="f2" style="margin-top:12px"><button class="gl" onclick="chPin()">Ganti PIN</button><button class="gl" onclick="lock()">Kunci sekarang</button></div></div>`:""}`}
+ <div class="f2" style="margin-top:12px"><button class="gl" onclick="chPin()">Ganti PIN</button><button class="gl" onclick="lock()">Kunci sekarang</button></div>${photoUI()}</div>`:""}${bk()}`}
 function list(l,pay){return l.length?l.map(x=>{const s=x.v-x.paid;return `<div class="item"><div class="row"><b>${esc(x.n)}</b><span>${s<=0?`<span class="chip ok">Lunas</span>`:`<b>${rp(s)}</b>`}</span></div>
  <div class="row"><span class="mu">Total ${rp(x.v)}${x.paid&&s>0?" · terbayar "+rp(x.paid):""}${x.due?" · "+esc(x.due):""}</span><span>${s>0?`<button class="g" onclick="openP(${x.id})">${pay}</button>`:""}<button class="g" onclick="delL(${x.id})">Hapus</button></span></div></div>`}).join(""):`<div class="mu">Belum ada.</div>`}
 function hutang(c){
  return `<div class="card"><div class="row"><div><div class="mu">Hutang (kamu yang bayar)</div><b class="neg">${rp(c.hs)}</b></div><div style="text-align:right"><div class="mu">Pinjaman (orang bayar ke kamu)</div><b class="pos">${rp(c.ps)}</b></div></div></div>
- <div class="card"><h2>Hutang / Cicilan</h2><div class="sub">Uang yang kamu pinjam dari orang lain.</div>${list(c.H,"Bayar")}</div>
+ <div class="card"><h2>Hutang</h2><div class="sub">Uang yang kamu pinjam dari orang lain.</div>${list(c.H,"Bayar")}</div>
  <div class="card"><h2>Pinjaman</h2><div class="sub">Uang kamu yang dipinjam orang lain.</div>${list(c.P,"Terima")}</div>
  <div class="card"><h2>Tambah catatan</h2><div class="f2"><div><label>Jenis</label><select id="lt"><option value="h">Hutang (aku pinjam)</option><option value="p">Pinjaman (aku meminjamkan)</option></select></div><div><label>Nama</label><input id="ln" placeholder="Nama"></div>
  <div><label>Jumlah</label><input id="lv" type="number" inputmode="numeric"></div><div><label>Jatuh tempo</label><input id="ld" placeholder="Contoh: Segera"></div></div>
@@ -358,35 +363,36 @@ function go(){save();const pk=!S,fx=FXS;FXS=null;
  goalCheck(fx?1700:450);fab()}
 const sheet=h=>$("#modal").innerHTML=`<div class="sheet" onclick="if(event.target==this)closeM()"><div>${h}</div></div>`;
 function closeM(){$("#modal").innerHTML="";PH=null}
-function openM(){const cats=[...S.bud.map(b=>b.n),"Di luar anggaran"],d0=$("#td")?$("#td").value:"",v0=$("#tv")?$("#tv").value:"";
+function openM(){const cats=[...S.bud.map(b=>b.n),"Di luar anggaran"],d0=$("#td")?$("#td").value:"",v0=$("#tv")?$("#tv").value:"",n0=$("#tn")?$("#tn").value:"";
  sheet(`<div class="tog"><button class="${T=="out"?"on":""}" onclick="T='out';openM()">Pengeluaran</button><button class="${T=="in"?"on":""}" onclick="T='in';openM()">Pemasukan</button></div>
  <div><label>Keterangan</label><input id="td" value="${esc(d0)}" placeholder="Contoh: Makan siang"></div>
  <div class="f2"><div><label>Jumlah</label><input id="tv" type="number" inputmode="numeric" value="${esc(v0)}"></div><div><label>Akun</label><select id="ta">${opts(S.accs)}</select></div></div>
  ${T=="out"?`<div><label>Kategori anggaran</label><select id="tc">${opts(cats)}</select></div>`:""}
  <div><label>Tanggal &amp; jam</label><input id="tw" type="datetime-local" value="${lt(new Date())}"></div>
+ <div><label>Catatan</label><input id="tn" value="${esc(n0)}" placeholder="Opsional"></div>
  <div><label>Foto nota (opsional)</label><div class="f2"><button class="gl" onclick="$('#fc').click()">Ambil foto</button><button class="gl" onclick="$('#fg').click()">Dari galeri</button></div>
  <input id="fc" type="file" accept="image/*" capture="environment" hidden onchange="pickPh(this.files[0])"><input id="fg" type="file" accept="image/*" hidden onchange="pickPh(this.files[0])">
  <div id="pv2" style="margin-top:8px">${PH?`<img src="${PH}">`:""}</div></div><button onclick="addT()">Simpan</button>`)}
 function pickPh(f){if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,1000/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*k;c.height=im.height*k;c.getContext("2d").drawImage(im,0,0,c.width,c.height);PH=c.toDataURL("image/jpeg",.65);$("#pv2").innerHTML=`<img src="${PH}">`};im.src=r.result};r.readAsDataURL(f)}
 async function addT(){const v=+$("#tv").value;if(!v||v<=0){$("#tv").focus();return}
  const dt=new Date($("#tw").value),ts=isNaN(dt)?Date.now():dt.getTime(),id=Date.now();
- const t={id,...stamp(ts),type:T,d:$("#td").value.trim()||(T=="in"?"Pemasukan":"Pengeluaran"),v,acc:$("#ta").value,cat:T=="out"?$("#tc").value:""};
+ const t={id,...stamp(ts),type:T,d:$("#td").value.trim()||(T=="in"?"Pemasukan":"Pengeluaran"),v,acc:$("#ta").value,cat:T=="out"?$("#tc").value:"",note:$("#tn").value.trim()};
  if(PH){await ph("put",S.id+"-"+id,PH);t.ph=1}
  const s=snap();S.tx.push(t);S.m=t.m;S.y=t.y;closeM();FXS=s;go()}
 function showPh(id){ph("get",S.id+"-"+id).then(u=>u?sheet(`<img src="${u}"><button class="gl" onclick="closeM()">Tutup</button>`):sheet(`<div class="mu">Foto tidak ditemukan.</div><button class="gl" onclick="closeM()">Tutup</button>`))}
-function del(id){ask("Yakin ingin menghapus transaksi ini?",()=>{const s=snap(),t=S.tx.find(x=>x.id==id);if(t&&t.ph)ph("del",S.id+"-"+id);S.tx=S.tx.filter(x=>x.id!=id);FXS=s;go()},"Saldo akan dihitung ulang.")}
+function del(id){ask("Yakin ingin menghapus transaksi ini?",()=>{closeM();const s=snap(),t=S.tx.find(x=>x.id==id);if(t&&t.ph)ph("del",S.id+"-"+id);S.tx=S.tx.filter(x=>x.id!=id);FXS=s;go()},"Saldo akan dihitung ulang.")}
 function addA(){const n=$("#an").value.trim();if(!n||S.accs.includes(n))return;S.accs.push(n);go()}
 function addB(){const n=$("#bn").value.trim();if(!n||S.bud.some(b=>b.n==n))return;S.bud.push({n,a:+$("#ba").value||0});go()}
 function addL(){const n=$("#ln").value.trim(),v=+$("#lv").value,t=$("#lt").value,a=$("#la").value;if(!n||!v)return;
  const s=snap(),id=Date.now();S.loans.push({id,t,n,v,paid:0,due:$("#ld").value.trim(),acc:a});
- if(a)S.tx.push({id:id+1,lid:id,ln:1,...stamp(id),type:t=="h"?"in":"out",d:(t=="h"?"Hutang dari ":"Pinjaman ke ")+n,v,acc:a,cat:""});FXS=s;go()}
+ if(a)S.tx.push({id:id+1,lid:id,ln:1,...stamp(id),type:t=="h"?"in":"out",d:(t=="h"?"Hutang dari ":"Pinjaman ke ")+n,v,acc:a,cat:t=="h"?"Hutang":"Pinjaman"});FXS=s;go()}
 function delL(id){ask("Yakin ingin menghapus catatan ini?",()=>{const s=snap();S.loans=S.loans.filter(l=>l.id!=id);S.tx=S.tx.filter(t=>t.lid!=id);FXS=s;go()},"Transaksi yang terhubung ikut terhapus.")}
 function openP(id){const l=S.loans.find(x=>x.id==id),h=l.t=="h";
  sheet(`<b>${h?"Bayar hutang":"Terima pembayaran"}: ${esc(l.n)}</b><div class="mu">Sisa ${rp(l.v-l.paid)}</div>
  <div class="f2"><div><label>Jumlah</label><input id="pv" type="number" inputmode="numeric" value="${l.v-l.paid}"></div><div><label>${h?"Dari akun":"Ke akun"}</label><select id="pa">${opts(S.accs,l.acc)}</select></div></div>
  <button onclick="payL(${id})">Simpan</button>`)}
 function payL(id){const l=S.loans.find(x=>x.id==id),h=l.t=="h";let v=+$("#pv").value;if(!v||v<=0)return;v=Math.min(v,l.v-l.paid);const s=snap();l.paid+=v;
- S.tx.push({id:Date.now(),lid:id,ln:h?0:1,...stamp(Date.now()),type:h?"out":"in",d:(h?"Bayar ":"Terima dari ")+l.n,v,acc:$("#pa").value,cat:h?"Bayar Cicilan":""});closeM();FXS=s;go()}
+ S.tx.push({id:Date.now(),lid:id,ln:1,...stamp(Date.now()),type:h?"out":"in",d:(h?"Bayar ":"Terima dari ")+l.n,v,acc:$("#pa").value,cat:h?"Hutang":"Pinjaman"});closeM();FXS=s;go()}
 
 /* ---------- tombol + auto-hide ---------- */
 let hideT;
@@ -448,6 +454,137 @@ function endSplash(){const sp=$("#splash");if(!sp||sp.dataset.x)return;sp.datase
 (function(){const sp=$("#splash"),P=R.prof;
  if(P&&P.name){const d=new Date(),b=P.birth?new Date(P.birth+"T00:00:00"):null;$("#sphi").textContent=b&&b.getDate()==d.getDate()&&b.getMonth()==d.getMonth()?"Selamat ulang tahun, "+P.name+"!":"Halo, "+P.name}
  sp.onclick=endSplash;setTimeout(endSplash,3600)})();
+/* ===== backup xlsx (tanpa library) ===== */
+const XLU=(()=>{const E=new TextEncoder(),Dc=new TextDecoder();
+const T=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^c>>>1:c>>>1;t[n]=c>>>0}return t})();
+const crc=b=>{let c=-1;for(let i=0;i<b.length;i++)c=T[(c^b[i])&255]^c>>>8;return(c^-1)>>>0};
+const w16=n=>[n&255,n>>8&255],w32=n=>[n&255,n>>8&255,n>>16&255,n>>>24];
+function zip(fs){const o=[],cd=[];let off=0;for(const f of fs){const n=E.encode(f.n),d=E.encode(f.d),c=crc(d),s=d.length,
+ h=new Uint8Array([80,75,3,4,20,0,0,8,0,0,0,0,33,0,...w32(c),...w32(s),...w32(s),...w16(n.length),0,0,...n]);
+ cd.push(new Uint8Array([80,75,1,2,20,0,20,0,0,8,0,0,0,0,33,0,...w32(c),...w32(s),...w32(s),...w16(n.length),0,0,0,0,0,0,0,0,0,0,0,0,...w32(off),...n]));o.push(h,d);off+=h.length+s}
+ const cl=cd.reduce((a,b)=>a+b.length,0);return new Blob([...o,...cd,new Uint8Array([80,75,5,6,0,0,0,0,...w16(fs.length),...w16(fs.length),...w32(cl),...w32(off),0,0])],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})}
+async function inflate(b){const ds=new DecompressionStream("deflate-raw"),w=ds.writable.getWriter();w.write(b);w.close();return new Uint8Array(await new Response(ds.readable).arrayBuffer())}
+async function unzip(buf){const u=new Uint8Array(buf),v=new DataView(u.buffer,u.byteOffset,u.byteLength);let e=u.length-22;while(e>=0&&v.getUint32(e,true)!==0x06054b50)e--;if(e<0)throw 0;
+ const n=v.getUint16(e+10,true);let p=v.getUint32(e+16,true);const out={};
+ for(let i=0;i<n;i++){const me=v.getUint16(p+10,true),cs=v.getUint32(p+20,true),nl=v.getUint16(p+28,true),el=v.getUint16(p+30,true),cm=v.getUint16(p+32,true),lo=v.getUint32(p+42,true),nm=Dc.decode(u.subarray(p+46,p+46+nl)),
+  ds=lo+30+v.getUint16(lo+26,true)+v.getUint16(lo+28,true),raw=u.subarray(ds,ds+cs);out[nm]=me==0?raw:await inflate(raw);p+=46+nl+el+cm}return out}
+const xe=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const un=s=>s.replace(/&#x([0-9a-f]+);/gi,(_,h)=>String.fromCodePoint(parseInt(h,16))).replace(/&#(\d+);/g,(_,d)=>String.fromCodePoint(+d)).replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,"&");
+class Sh{constructor(){this.r={}}
+ set(a,v,s){const m=/^([A-Z]+)(\d+)$/.exec(a);let c=0;for(const ch of m[1])c=c*26+ch.charCodeAt(0)-64;((this.r[+m[2]]=this.r[+m[2]]||{})[c]={a,v,s})}
+ xml(){const cell=({a,v,s})=>{const st=s?` s="${s}"`:"";if(v&&typeof v=="object")return`<c r="${a}"${st}><f>${xe(v.f)}</f><v>${v.v}</v></c>`;
+  if(typeof v=="number")return`<c r="${a}"${st}><v>${isFinite(v)?v:0}</v></c>`;return`<c r="${a}"${st} t="inlineStr"><is><t xml:space="preserve">${xe(v)}</t></is></c>`};
+  const W=[20,26,16,14,14,20,22,20,14,14,18];return`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols>${W.map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join("")}</cols><sheetData>${
+  Object.keys(this.r).map(Number).sort((a,b)=>a-b).map(r=>`<row r="${r}">${Object.keys(this.r[r]).map(Number).sort((a,b)=>a-b).map(c=>cell(this.r[r][c])).join("")}</row>`).join("")}</sheetData></worksheet>`}}
+function pack(list){const n=list.length,H='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+ return zip([{n:"[Content_Types].xml",d:H+`<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${list.map((_,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("")}</Types>`},
+ {n:"_rels/.rels",d:H+`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`},
+ {n:"xl/workbook.xml",d:H+`<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${list.map((s,i)=>`<sheet name="${xe(s[0])}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join("")}</sheets></workbook>`},
+ {n:"xl/_rels/workbook.xml.rels",d:H+`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${list.map((_,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join("")}<Relationship Id="rId${n+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`},
+ {n:"xl/styles.xml",d:H+`<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="3" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs></styleSheet>`},
+ ...list.map((s,i)=>({n:`xl/worksheets/sheet${i+1}.xml`,d:s[1].xml()}))])}
+function cells(xml,ss){const c={},re=/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g;let m;
+ while(m=re.exec(xml)){const r=/\br="([A-Z]+\d+)"/.exec(m[1]);if(!r)continue;const t=(/\bt="(\w+)"/.exec(m[1])||[])[1],b=m[2]||"";let v=null;
+  if(t=="inlineStr")v=[...b.matchAll(/<t\b[^>]*>([\s\S]*?)<\/t>/g)].map(x=>un(x[1])).join("");
+  else{const q=/<v>([\s\S]*?)<\/v>/.exec(b);if(q)v=t=="s"?ss[+q[1]]:t=="str"?un(q[1]):t=="b"||t=="e"?null:+q[1]}
+  if(v!==null&&v!==""&&!(typeof v=="number"&&isNaN(v)))c[r[1]]=v}return c}
+async function read(buf){const z=await unzip(buf),g=n=>z[n]?Dc.decode(z[n]):"";
+ const ss=[...g("xl/sharedStrings.xml").matchAll(/<si\b[^>]*>([\s\S]*?)<\/si>/g)].map(m=>[...m[1].matchAll(/<t\b[^>]*>([\s\S]*?)<\/t>/g)].map(x=>un(x[1])).join(""));
+ const rel={};for(const m of g("xl/_rels/workbook.xml.rels").matchAll(/<Relationship\b([^>]*)>/g)){const i=/\bId="([^"]*)"/.exec(m[1]),t=/\bTarget="([^"]*)"/.exec(m[1]);if(i&&t)rel[i[1]]=t[1].replace(/^\/?(xl\/)?/,"xl/")}
+ const out={};for(const m of g("xl/workbook.xml").matchAll(/<sheet\b([^>]*)>/g)){const n=/\bname="([^"]*)"/.exec(m[1]),i=/\br:id="([^"]*)"/.exec(m[1]);if(n&&i&&z[rel[i[1]]]){const x=g(rel[i[1]]),cs={},re=/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g;out[un(n[1])]=cells(x,ss)}}return out}
+return{Sh,pack,read}})();
+const dstr=t=>{const d=new Date(tsOf(t));return`${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())} WIB`};
+function bkBuild(D){const Y=D.tx.reduce((a,t)=>Math.max(a,yr(t)),new Date().getFullYear()),non=D.invs.reduce((s,i)=>s+iv(i),0),ym=[],list=[];
+ D.tx.forEach(t=>{const y=yr(t);if(y!=Y&&!ym.some(a=>a[0]==y&&a[1]==t.m))ym.push([y,t.m])});ym.sort((a,b)=>a[0]-b[0]||a[1]-b[1]);for(let m=0;m<12;m++)ym.push([Y,m]);
+ ym.forEach(([y,m])=>{const s=new XLU.Sh,tx=D.tx.filter(t=>t.m==m&&yr(t)==y).sort((a,b)=>tsOf(a)-tsOf(b)),end=new Date(y,m+1,0,23,59,59).getTime(),bal={};
+  D.accs.forEach(a=>bal[a]=D.open[a]||0);D.tx.forEach(t=>{if(tsOf(t)<=end&&bal[t.acc]!==undefined)bal[t.acc]+=t.type=="in"?t.v:-t.v});
+  const liq=D.accs.reduce((q,a)=>q+bal[a],0),ex=tx.filter(t=>t.type=="out"),inn=tx.filter(t=>t.type=="in");
+  s.set("B1",D.name,1);s.set("D3","Last Update",1);s.set("E3","Target",1);s.set("G3","Progress",1);s.set("D4",ymd(new Date()));s.set("E4",D.target,2);s.set("G4",D.target>0?(liq+non)/D.target:0);s.set("D5",liq+non,2);s.set("D6","Total Assets Value");
+  s.set("B9","Liquid Assets",1);s.set("E9",liq,2);s.set("G9","Non Liquid Assets",1);s.set("J9",non,2);D.accs.slice(0,4).forEach((a,i)=>{s.set("BCDE"[i]+10,a,1);s.set("BCDE"[i]+11,bal[a],2)});
+  s.set("B12","Total Pengeluaran",1);s.set("D12",{f:"SUM(D15:D5000)",v:sum(ex)},2);s.set("G12","Total Pemasukan",1);s.set("I12",{f:"SUM(I15:I46)+SUM(N15:N5000)",v:sum(inn)},2);
+  s.set("B13","Pengeluaran",1);s.set("G13","Pemasukan",1);[["A","Waktu"],["B","Description"],["C","Kategori"],["D","Value"],["E","Account"],["F","Catatan"],["G","Description"],["H","Waktu"],["I","Value"],["J","Account"],["K","Catatan"]].forEach(([c,v])=>s.set(c+14,v,1));
+  ex.forEach((t,i)=>{const r=15+i;s.set("A"+r,dstr(t));s.set("B"+r,t.d);s.set("C"+r,t.cat||"");s.set("D"+r,t.v,2);s.set("E"+r,t.acc);if(t.note)s.set("F"+r,t.note);s.set("R"+r,t.id);if(t.lid)s.set("S"+r,t.lid);if(t.ln)s.set("T"+r,1)});
+  inn.forEach((t,i)=>{const o=i>30,r=15+(o?i-31:i),[a,b,c,d,e,f,g,h]=o?"LMNOPXYZ":"GHIJKUVW";s.set(a+r,t.d);s.set(b+r,dstr(t));s.set(c+r,t.v,2);s.set(d+r,t.acc);if(t.note)s.set(e+r,t.note);s.set(f+r,t.id);if(t.lid)s.set(g+r,t.lid);if(t.ln)s.set(h+r,1)});
+  s.set("G49","Kebutuhan",1);s.set("H49","Anggaran",1);s.set("I49","Sisa Anggaran",1);s.set("J49","Realita",1);
+  D.bud.forEach((b,i)=>{const r=50+i,x=sum(ex.filter(t=>!t.ln&&t.cat==b.n));s.set("G"+r,b.n);s.set("H"+r,b.a,2);s.set("I"+r,b.a-x,2);s.set("J"+r,x,2)});
+  list.push([MN[m]+(y!=Y?" "+y:""),s])});
+ const L=new XLU.Sh;[["A1","Hutang/Cicilan"],["B1","Value"],["C1","Sisa"],["D1","Jangka Waktu"],["F1","Pinjaman"],["G1","Value"],["H1","Sisa"],["I1","Jangka Waktu"]].forEach(([a,v])=>L.set(a,v,1));
+ [["h","ABCD"],["p","FGHI"]].forEach(([k,c])=>D.loans.filter(l=>l.t==k).forEach((l,i)=>{const r=2+i,q=l.v-l.paid;L.set(c[0]+r,l.n);L.set(c[1]+r,l.v,2);L.set(c[2]+r,q<=0?"Lunas":q,2);if(l.due)L.set(c[3]+r,l.due)}));
+ const M=new XLU.Sh;M.set("A1",Y);["Description","Expenditure","Income","Remaining Amount"].forEach((v,i)=>M.set("ABCD"[i]+2,v,1));let te=0,ti=0;
+ for(let m=0;m<12;m++){const r=3+m,a=D.tx.filter(t=>!t.ln&&t.m==m&&yr(t)==Y),e=sum(a.filter(t=>t.type=="out")),i=sum(a.filter(t=>t.type=="in"));te+=e;ti+=i;M.set("A"+r,MN[m]);M.set("B"+r,e,2);M.set("C"+r,i,2);M.set("D"+r,{f:`C${r}-B${r}`,v:i-e},2)}
+ M.set("A15","Total",1);M.set("B15",{f:"SUM(B3:B14)",v:te},2);M.set("C15",{f:"SUM(C3:C14)",v:ti},2);M.set("D15",{f:"C15-B15",v:ti-te},2);
+ const P=new XLU.Sh,js=JSON.stringify({v:1,name:D.name,goal:D.goal||"",target:D.target,accs:D.accs,open:D.open,bud:D.bud,invs:D.invs,loans:D.loans});P.set("A1","Moneysev backup v1");(js.match(/[\s\S]{1,30000}/g)||[]).forEach((c,i)=>P.set("A"+(2+i),c));
+ return XLU.pack([...list,["Loan",L],["Monthly Summary",M],["Moneysev",P]])}
+async function bkParse(buf){const sh=await XLU.read(buf),nn=v=>{if(typeof v=="number")return v;let s=String(v==null?"":v).trim();if(s.includes(","))s=s.replace(/\./g,"").replace(",",".");return parseFloat(s)||0},
+ Y0=+(sh["Monthly Summary"]||{}).A1||new Date().getFullYear(),mi=n=>MN.findIndex(x=>n==x||n.startsWith(x+" ")),tx=[];
+ const dt=(v,m,y,i)=>{if(typeof v=="number"&&v>20000){const u=new Date(Date.UTC(1899,11,30)+v*864e5);return new Date(u.getUTCFullYear(),u.getUTCMonth(),u.getUTCDate(),u.getUTCHours(),u.getUTCMinutes()).getTime()}
+  const r=/(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2}))?/.exec(v||"");return r?new Date(+r[3],r[2]-1,+r[1],+(r[4]||0),+(r[5]||0)).getTime():new Date(y,m,1,12,i).getTime()};
+ let last=null;
+ for(const nm in sh){const m=mi(nm);if(m<0||!/^[A-Za-z]+( \d{4})?$/.test(nm))continue;const c=sh[nm],y=+(nm.split(" ")[1]||Y0);let rows=0,n0=tx.length;for(const k in c)rows=Math.max(rows,+k.replace(/\D/g,""));
+  for(let r=15;r<=rows;r++){const B=c["B"+r],Dv=nn(c["D"+r]);if(B!=null&&Dv>0&&!/^total/i.test(B))tx.push({type:"out",d:String(B),cat:c["C"+r]?String(c["C"+r]):"",v:Dv,acc:c["E"+r]?String(c["E"+r]):"",ts:dt(c["A"+r],m,y,r),note:c["F"+r]?String(c["F"+r]):"",x:[c["R"+r],c["S"+r],c["T"+r]]});
+   for(const [a,b,v,ac,n,mx,i1,i2,i3] of [["G","H","I","J","K",46,"U","V","W"],["L","M","N","O","P",1e9,"X","Y","Z"]]){const G=c[a+r],V=nn(c[v+r]);if(r<=mx&&G!=null&&V>0&&!/^total/i.test(G))tx.push({type:"in",d:String(G),cat:"",v:V,acc:c[ac+r]?String(c[ac+r]):"",ts:dt(c[b+r],m,y,r),note:c[n+r]?String(c[n+r]):"",x:[c[i1+r],c[i2+r],c[i3+r]]})}}
+  if(tx.length>n0&&(!last||y*12+m>=last[0]))last=[y*12+m,c]}
+ let seq=Date.now();const ids=new Set();tx.sort((a,b)=>a.ts-b.ts);
+ const T=tx.map(t=>{let id=+t.x[0]||seq++;while(ids.has(id))id=seq++;ids.add(id);const o={id,...stamp(t.ts),type:t.type,d:t.d,v:t.v,acc:t.acc,cat:t.cat};if(t.note)o.note=t.note;if(t.x[1])o.lid=+t.x[1];if(t.x[2])o.ln=1;return o});
+ let W;const mt=sh.Moneysev;
+ if(mt&&String(mt.A1||"").startsWith("Moneysev backup")){let js="";for(let i=2;mt["A"+i]!=null;i++)js+=mt["A"+i];W=JSON.parse(js)}
+ else{const j=sh.Januari||{},c=last?last[1]:j,accs=["B","C","D","E"].map(k=>j[k+"10"]).filter(x=>typeof x=="string"&&x),bud=[];
+  for(let r=50;r<=62;r++)if(typeof c["G"+r]=="string"&&!/hutang|total/i.test(c["G"+r]))bud.push({n:c["G"+r],a:nn(c["H"+r])});
+  const loans=[];let id=seq+5e6;for(const [k,t,n,v,s,d] of [["h","h","A","B","C","D"],["p","p","F","G","H","I"]])for(let r=2;r<=300;r++){const L=sh.Loan||{},nm=L[n+r],val=nn(L[v+r]);if(!nm||val<=0)continue;const q=L[s+r];loans.push({id:id++,t,n:String(nm),v:val,paid:typeof q=="number"?Math.max(0,val-q):q=="Lunas"?val:0,due:L[d+r]?String(L[d+r]):"",acc:""})}
+  W={name:j.B1?String(j.B1):"Impor",target:nn(j.E4)||5000000,goal:"",accs,open:{},bud,invs:[{id:1,k:"gold",n:"Emas",u:nn(c.J76),p:nn(c.J77)||2224}],loans};
+  if(nn(c.J78)>0)W.invs.push({id:2,k:"rd",n:"Reksa Dana",u:nn(c.J78),p:nn(c.J79)||2000})}
+ W.accs=W.accs&&W.accs.length?W.accs:["Cash"];T.forEach(t=>{if(!t.acc)t.acc=W.accs[0];if(!W.accs.includes(t.acc))W.accs.push(t.acc)});W.open=W.open||{};W.tx=T;return W}
+
+/* ===== v5: perubahan baru ===== */
+const iv=i=>i.k=="gold"?i.u*1000*i.p:i.u*i.p;
+let PF=null;ph("get","profile").then(u=>{PF=u;if(!S&&R.prof)go()});
+const DM=()=>{const n=new Date();return n.getFullYear()==S.y&&n.getMonth()==S.m?n.getDate():new Date(S.y,S.m+1,0).getDate()};
+function hist(l){if(FL.sort!="new"&&FL.sort!="old")return l.map(txRow).join("");const g={};let h="",k="";
+ l.forEach(t=>{if(t.ln)return;const q=yr(t)+"-"+t.m,x=g[q]=g[q]||{i:0,o:0};t.type=="in"?x.i+=t.v:x.o+=t.v});
+ l.forEach(t=>{const q=yr(t)+"-"+t.m;if(q!=k){k=q;const x=g[q]||{i:0,o:0};h+=`<div class="mh"><b>${MN[t.m]} ${yr(t)}</b><div class="row mu"><span>Total Pengeluaran</span><b class="neg">${rp(x.o)}</b></div><div class="row mu"><span>Total Pemasukan</span><b class="pos">${rp(x.i)}</b></div></div>`}h+=txRow(t)});return h}
+function openD(id){const t=S.tx.find(x=>x.id==id);if(!t)return;const r=(a,b)=>b?`<div class="row"><span class="mu">${a}</span><b style="text-align:right">${esc(b)}</b></div>`:"";
+ sheet(`<div class="row"><b>Rincian transaksi</b><button class="g" onclick="closeM()">Tutup</button></div>${t.ph?`<img id="dpi" alt="Foto nota" style="max-height:65vh;object-fit:contain;background:var(--field)">`:""}<div class="big ${t.type=="in"?"pos":"neg"}">${t.type=="in"?"+":"-"}${rp(t.v)}</div>${r("Keterangan",t.d)}${r("Jenis",t.type=="in"?"Pemasukan":"Pengeluaran")}${r("Tanggal",fmt(tsOf(t)))}${r("Akun",t.acc)}${r("Kategori",t.cat)}${r("Catatan",t.note)}<button style="background:var(--ng)" onclick="del(${t.id})">Hapus transaksi</button>`);
+ if(t.ph)ph("get",S.id+"-"+id).then(u=>{const e=$("#dpi");if(e&&u)e.src=u})}
+function go(){save();const pk=!S,fx=FXS,tab=pk?"":S.tab;FXS=null;document.body.classList.toggle("pk",pk);
+ $("#ctl").style.display=$("nav").style.display=$("#plus").style.display=pk?"none":"";$("#sub").textContent=pk?"":(R.prof?R.prof.name+" · ":"")+S.name;
+ if(!pk){$("#ms").hidden=tab!="bud";$("#sbtn").hidden=tab=="as";$("#swb").hidden=tab!="as";
+  const n=new Date();let ey=n.getFullYear(),em=n.getMonth(),ly=ey,lm=em;S.tx.forEach(t=>{const y=yr(t);if(y<ey||y==ey&&t.m<em){ey=y;em=t.m}});
+  if(S.y<ey||S.y==ey&&S.m<em){ey=S.y;em=S.m}if(S.y>ly||S.y==ly&&S.m>lm){ly=S.y;lm=S.m}
+  let o="";for(let y=ly,m=lm;y>ey||y==ey&&m>=em;){o+=`<option value="${y}-${m}" ${y==S.y&&m==S.m?"selected":""}>${MN[m]} ${y}</option>`;if(--m<0){m=11;y--}}
+  $("#ms").innerHTML=o;$("#nav").innerHTML=TABS.map(t=>`<button class="${t[0]==S.tab?"on":""}" onclick="S.tab='${t[0]}';AN=1;go()">${t[1]}</button>`).join("")}
+ const a=$("#app");a.classList.remove("enter");a.innerHTML=pk?pick():TABS.find(t=>t[0]==S.tab)[2](C());
+ if(AN){void a.offsetWidth;a.classList.add("enter");AN=0}if(fx&&!pk)runFX(fx);if(SR&&!pk)renderSR();goalCheck(fx?2900:450);fab()}
+function rmI(i){ask(`Hapus investasi ${esc(S.invs[i].n)}?`,()=>{S.invs.splice(i,1);go()})}
+function addI(){const n=$("#in").value.trim(),k=$("#ik").value;if(!n)return;S.invs.push({id:Date.now(),k,n,u:0,p:k=="gold"?2224:1});go()}
+function bk(){return`<div class="card"><h2>Backup &amp; data</h2><div class="sub">Format Excel (.xlsx) sama seperti file Keuanganku. Bisa dibuka di Google Sheets lewat File → Impor. Foto nota tidak ikut di backup.</div><div class="f2"><button class="gl" onclick="bkOut()">Backup ke xlsx</button><button class="gl" onclick="$('#bkf').click()">Pulihkan dari xlsx</button></div><input id="bkf" type="file" accept=".xlsx" hidden onchange="bkIn(this.files[0]);this.value=''"><button class="w" style="background:var(--ng)" onclick="wipeAsk()">Hapus semua data</button></div>`}
+function photoUI(){return`<div class="row" style="margin-top:12px"><div style="display:flex;gap:10px;align-items:center">${PF?`<img src="${PF}" alt="" style="width:44px;height:44px;border-radius:50%;object-fit:cover">`:""}<span class="mu">Foto profil</span></div><span><button class="gl sm" onclick="$('#pf').click()">${PF?"Ganti":"Unggah"}</button>${PF?`<button class="g" onclick="pfDel()">Hapus</button>`:""}</span></div><input id="pf" type="file" accept="image/*" hidden onchange="pfSet(this.files[0]);this.value=''">`}
+function pfSet(f){if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,800/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*k;c.height=im.height*k;c.getContext("2d").drawImage(im,0,0,c.width,c.height);PF=c.toDataURL("image/jpeg",.8);ph("put","profile",PF);go()};im.src=r.result};r.readAsDataURL(f)}
+function pfDel(){PF=null;ph("del","profile");go()}
+function confirmBox(t,s,y,fn){CBF=fn;sheet(`<b>${t}</b><div class="mu">${s}</div><div class="f2"><button class="gl" onclick="CBF=null;closeM()">Batal</button><button onclick="yes2()">${y}</button></div>`)}
+function yes2(){const f=CBF;CBF=null;closeM();if(f)f()}
+function askBack(){if(!S)return;confirmBox("Kembali ke menu dompet?","Kamu akan keluar dari dompet "+esc(S.name)+" dan kembali ke daftar dompet.","Ya, kembali",()=>{S=null;AN=1;go();history.back()})}
+history.replaceState({b:1},"");
+addEventListener("popstate",()=>{if(!S)return;history.pushState({w:1},"");if(PD||!$("#lock").hidden)return;if($("#modal").innerHTML)closeM();else if(SR)closeSearch();else askBack()});
+(()=>{let y0=null,d=0;const el=document.createElement("div");el.id="ptr";document.body.appendChild(el);
+ const bl=()=>PD||!$("#lock").hidden||!$("#ob").hidden||$("#splash")||$("#modal").innerHTML||SR;
+ addEventListener("touchstart",e=>{y0=!bl()&&scrollY<=0?e.touches[0].clientY:null;d=0},{passive:true});
+ addEventListener("touchmove",e=>{if(y0==null)return;d=e.touches[0].clientY-y0;if(scrollY>0||d<=0){el.style.transform="translate(-50%,-60px)";return}el.textContent=d>110?"Lepas untuk refresh":"Tarik untuk refresh";el.style.transform=`translate(-50%,${Math.min(d*.45,56)}px)`},{passive:true});
+ addEventListener("touchend",()=>{el.style.transform="translate(-50%,-60px)";if(y0!=null&&d>110)confirmBox("Refresh dompet?","Apakah Anda yakin ingin me-refresh dompet Anda? Aplikasi akan dimuat ulang.","Ya, refresh",()=>location.reload());y0=null;d=0},{passive:true})})();
+let AC=null;function sparkle(){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state=="suspended")AC.resume();const t0=AC.currentTime+.02;
+ [1046.5,1318.5,1568,2093,2637,3136,4186].forEach((f,i)=>{const t=t0+i*.075,g=AC.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.11,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+.9);g.connect(AC.destination);
+  [[f,"sine"],[f*2.003,"triangle"]].forEach(([q,ty])=>{const o=AC.createOscillator();o.type=ty;o.frequency.value=q;o.connect(g);o.start(t);o.stop(t+1)})});
+ const n=AC.createBuffer(1,AC.sampleRate*.7,AC.sampleRate),b=n.getChannelData(0);for(let i=0;i<b.length;i++)b[i]=Math.random()*2-1;const s=AC.createBufferSource(),h=AC.createBiquadFilter(),g=AC.createGain();
+ s.buffer=n;h.type="highpass";h.frequency.value=7000;g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(.05,t0+.1);g.gain.exponentialRampToValueAtTime(.0001,t0+.7);s.connect(h);h.connect(g);g.connect(AC.destination);s.start(t0)}catch(e){}}
+function wipeAsk(){sheet(`<b>Hapus semua data?</b><div class="mu">Semua dompet, transaksi, foto, dan PIN di HP ini dihapus permanen, lalu aplikasi mulai dari kosong. Sebaiknya backup ke xlsx dulu.</div><button class="gl" onclick="closeM();bkOut()">Backup dulu</button><input id="wz" placeholder="Ketik HAPUS" autocomplete="off"><button style="background:var(--ng)" onclick="wipeAll()">Hapus semua data</button><button class="g" onclick="closeM()">Batal</button>`)}
+async function wipeAll(){if($("#wz").value.trim().toUpperCase()!="HAPUS")return;try{localStorage.removeItem(KEY);localStorage.removeItem("moneysev-v1");indexedDB.deleteDatabase("moneysev-img");const k=await caches.keys();await Promise.all(k.map(x=>caches.delete(x)));const r=await navigator.serviceWorker.getRegistrations();await Promise.all(r.map(x=>x.unregister()))}catch(e){}location.reload()}
+function bkOut(){try{const b=bkBuild(S),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="Moneysev-"+S.name.replace(/[^\w-]+/g,"_")+"-"+ymd(new Date())+".xlsx";document.body.appendChild(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(a.href)},4000);toast("Backup dibuat")}catch(e){toast("Backup gagal")}}
+let BKW=null;
+async function bkIn(f){if(!f)return;try{BKW=await bkParse(await f.arrayBuffer())}catch(e){toast("File tidak bisa dibaca. Pakai file .xlsx hasil backup Moneysev atau Keuanganku.");return}
+ sheet(`<b>Pulihkan dari ${esc(f.name)}</b><div class="mu">Ditemukan ${BKW.tx.length} transaksi, ${BKW.loans.length} catatan hutang/pinjaman, ${BKW.accs.length} akun.</div><button onclick="bkApply(1)">Tambah sebagai dompet baru</button><button style="background:var(--ng)" onclick="bkApply(0)">Ganti isi dompet ${esc(S.name)}</button><button class="g" onclick="BKW=null;closeM()">Batal</button>`)}
+function bkApply(nw){const W=BKW;BKW=null;closeM();if(!W)return;const done=()=>{AN=1;toast("Data dipulihkan");go()};
+ if(nw){let n=W.name||"Impor",i=2;while(R.ds.some(d=>d.name==n))n=(W.name||"Impor")+" "+i++;R.ds.push(Object.assign(mk(n),W,{name:n,id:Date.now()}));done();return}
+ const id=S.id,nm=S.name,tab=S.tab;Object.keys(S).forEach(k=>delete S[k]);Object.assign(S,mk(nm),W,{id,name:nm,tab,done:0});const n=new Date();S.m=n.getMonth();S.y=n.getFullYear();done()}
+
 go();
 </script>
 <script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));</script>
