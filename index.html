@@ -156,6 +156,18 @@ header>div:first-child{display:flex;align-items:center;gap:10px}header>div:first
 .wit{position:relative;overflow:hidden;margin:0 -14px;padding:10px 14px}
 .wit>*:not(.ov){position:relative;z-index:1}
 .ws{position:relative;overflow:hidden;margin:0 -14px;border-top:1px solid var(--ln);cursor:pointer;touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.wg{display:grid;gap:12px;margin-top:6px}.wg.tiles{grid-template-columns:1fr 1fr}.wg.cards{grid-template-columns:1fr}
+.wg .ws{margin:0;border:0;border-radius:22px;overflow:hidden;box-shadow:0 6px 18px rgba(30,40,110,.18);touch-action:manipulation}
+.wc{position:relative;width:100%;aspect-ratio:1/1;color:#fff;display:flex;align-items:flex-end}.wg.cards .wc{aspect-ratio:16/9}
+.wc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.wc::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.68))}
+.wl{position:absolute;left:14px;top:12px;width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.25);display:grid;place-items:center;font-size:26px;font-weight:800}
+.wx{position:relative;z-index:1;padding:12px 14px;display:flex;flex-direction:column;min-width:0;width:100%;text-shadow:0 1px 6px rgba(0,0,0,.55)}
+.wx b{font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wx span{font-weight:800;font-size:18px}.wx small{opacity:.9}
+.vm{display:flex;gap:2px;padding:3px;border-radius:14px;background:var(--field);border:1px solid var(--edge)}
+.vm button{width:34px;height:30px;padding:0;display:grid;place-items:center;border-radius:11px;background:none;color:var(--mu);border:0;box-shadow:none}
+.vm button.on{background:var(--pr);color:#fff}
+.ws .item{border-top:0}.ws .wit{min-height:104px;align-items:center}.ws .ov{width:75%}
 .ws .item{border-top:0}.ws .wit{margin:0}
 .wdel{position:absolute;inset:0;display:none;align-items:center;justify-content:flex-end;padding-right:22px;color:#fff;background:#d63a5c}
 .ws.sw .wdel{display:flex}.wdel svg{opacity:calc(.45 + var(--p,0)*.55);transform:scale(calc(.8 + var(--p,0)*.3))}
@@ -232,7 +244,7 @@ const fmt=ts=>new Date(ts).toLocaleString("id-ID",{weekday:"short",day:"numeric"
 const stamp=ts=>{const d=new Date(ts);return{ts,m:d.getMonth(),y:d.getFullYear()}};
 const mk=n=>{const d=new Date();return{id:Date.now(),name:n,m:d.getMonth(),y:d.getFullYear(),tab:"home",target:5000000,goal:"",accs:["Cash"],accx:{},open:{},bud:[],invs:[{id:1,k:"gold",n:"Emas",u:0,p:2224,h:[]}],loans:[],tx:[]}};
 let R=null,S=null,T="out",E=0,AN=1,PH=null,FXS=null,SR=0,APG=0,OVG=0,OVX={},MV=null,NP=[],ET="out",EPD=0,ANG=0,ANP=6,ANS=null,ANV=0,TRM="acc",TRI=0,TM=0,INK="gold";
-const APPV="17",SV=2,SNAPK="moneysev-pre-update";
+const APPV="18",SV=2,SNAPK="moneysev-pre-update";
 let DELM=false,DSel=new Set(),LDM=null,LSel=new Set(),ALLS=[],LPH=null;
 const TRASH='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg>';let RAW=null;
 try{RAW=localStorage.getItem(KEY)}catch(e){}
@@ -356,12 +368,16 @@ function renderSR(){const toks=($("#sq").value||"").trim().toLowerCase().split(/
  $("#sres").innerHTML=`<div class="sub" style="padding:0 4px">${toks.length?(l.length+nl)+" hasil ditemukan":"Transaksi terbaru"}</div>${H.length?`<div class="card"><h2>Hutang</h2>${list(H,"Bayar")}</div>`:""}${P.length?`<div class="card"><h2>Pinjaman</h2>${list(P,"Terima")}</div>`:""}${l.length||!nl?`<div class="card">${l.length?l.map(txRow).join(""):`<div class="mu">Tidak ada transaksi yang cocok.</div>`}</div>`:""}`}
 
 /* ---------- halaman ---------- */
-function pick(){
+const VMS=[["tiles","Tiles",'<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>'],["cards","Kartu besar",'<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="8" rx="2"/><rect x="3" y="13" width="18" height="8" rx="2"/></svg>'],["list","Daftar",'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>']];
+function wbg(n){let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))%360;return `linear-gradient(135deg,hsl(${h} 65% 55%),hsl(${(h+50)%360} 70% 42%))`}
+function setV(v){R.view=v;AN=0;go()}
+function pick(){const vm=R.view||"tiles";
  const cs=R.ds.map(d=>({d,c:C(d)})),tot=cs.reduce((s,x)=>s+x.c.aset,0);
  return `<div class="card hero"><small>Total uang keseluruhan</small><div class="big">${rp(tot)}</div><small>${R.ds.length} dompet</small></div>
- <div class="card"><h2>Pilih dompet</h2><div class="sub">Ketuk untuk masuk. Geser ke kiri untuk menghapus, tahan lama untuk mengedit.</div>
- ${cs.map((x,i)=>`<div class="ws" data-i="${i}" onclick="enter(${i})"><div class="wdel">${TRASH.replace('width="18" height="18"','width="26" height="26"')}</div><div class="item row wit wf${PFS[x.d.id]?" hp":""}">${PFS[x.d.id]?`<img class="ov" src="${PFS[x.d.id]}" alt="">`:""}<div class="${PFS[x.d.id]&&PFL[x.d.id]!=null?(PFL[x.d.id]>.55?"td":"tl"):""}"><b>${esc(x.d.name)}</b></div>
- <div class="${PFS[x.d.id]&&PFL[x.d.id]!=null?"":""}" style="text-align:right"><b>${rp(x.c.aset)}</b><div class="mu">Saldo</div></div></div></div>`).join("")||`<div class="mu">Belum ada dompet. Buat yang pertama di bawah.</div>`}
+ <div class="card"><div class="row" style="align-items:center"><h2 style="margin:0">Pilih dompet</h2><div class="vm" role="group" aria-label="Tampilan">${VMS.map(v=>`<button class="${vm==v[0]?"on":""}" onclick="setV('${v[0]}')" aria-label="${v[1]}" title="${v[1]}">${v[2]}</button>`).join("")}</div></div><div class="sub">${vm=="list"?"Ketuk untuk masuk. Geser ke kiri untuk menghapus, tahan lama untuk mengedit.":"Ketuk untuk masuk, tahan lama untuk mengedit atau menghapus."}</div>
+ ${vm=="list"?cs.map((x,i)=>`<div class="ws" data-sw="1" data-i="${i}" onclick="enter(${i})"><div class="wdel">${TRASH.replace('width="18" height="18"','width="26" height="26"')}</div><div class="item row wit wf${PFS[x.d.id]?" hp":""}">${PFS[x.d.id]?`<img class="ov" src="${PFS[x.d.id]}" alt="">`:""}<div class="${PFS[x.d.id]&&PFL[x.d.id]!=null?(PFL[x.d.id]>.55?"td":"tl"):""}"><b>${esc(x.d.name)}</b></div>
+ <div style="text-align:right"><b>${rp(x.c.aset)}</b><div class="mu">Saldo</div></div></div></div>`).join(""):`<div class="wg ${vm}">${cs.map((x,i)=>`<div class="ws wt" data-i="${i}" onclick="enter(${i})"><div class="wf wc" style="${PFS[x.d.id]?"":"background:"+wbg(x.d.name)}">${PFS[x.d.id]?`<img src="${PFS[x.d.id]}" alt="">`:`<span class="wl">${esc([...x.d.name][0]||"?").toUpperCase()}</span>`}<div class="wx"><b>${esc(x.d.name)}</b><span>${rp(x.c.aset)}</span><small>Saldo</small></div></div></div>`).join("")}</div>`}
+ ${cs.length?"":`<div class="mu">Belum ada dompet. Buat yang pertama di bawah.</div>`}
  <div class="f2" style="margin-top:10px"><input id="dn" placeholder="Contoh: Multimedia"><button onclick="addD()">Buat dompet</button></div></div>`}
 function enter(i){history.pushState({w:1},"");S=R.ds[i];S.tab="home";const n=new Date();S.m=n.getMonth();S.y=n.getFullYear();FL=FL0();E=0;AN=1;go()}
 function addD(){const n=$("#dn").value.trim();if(!n||R.ds.some(d=>d.name==n))return;R.ds.push(mk(n));AN=1;go()}
@@ -373,7 +389,7 @@ function askDel2(id){sheet(`<b>Apakah Anda sudah yakin akan tindakan Anda?</b><d
 function editW(i){const d=R.ds[i];if(!d)return;EDW=d;
  sheet(`<b>Edit dompet</b><label>Nama dompet</label><input id="en" value="${esc(d.name)}" maxlength="40" autocomplete="off"><div class="er" id="ee"></div>
  <button class="gl" onclick="editWPhoto(0)">${PFS[d.id]?"Ganti foto profil":"Pilih foto profil"}</button>${PFS[d.id]?`<button class="g" style="color:var(--ng)" onclick="editWPhoto(2)">Hapus foto profil</button>`:""}
- <button onclick="saveW(${i})">Simpan</button><button class="g" onclick="EDW=null;closeM()">Batal</button>`)}
+ <button onclick="saveW(${i})">Simpan</button><button class="g" style="color:var(--ng)" onclick="EDW=null;closeM();askDel(${i})">Hapus dompet</button><button class="g" onclick="EDW=null;closeM()">Batal</button>`)}
 function saveW(i){const d=R.ds[i],n=$("#en").value.trim();if(!n){$("#ee").textContent="Nama tidak boleh kosong.";return}
  if(R.ds.some(x=>x!==d&&x.name==n)){$("#ee").textContent="Nama dompet sudah dipakai.";return}d.name=n;EDW=null;closeM();go()}
 function editWPhoto(k){const d=EDW;if(!d)return;const nm=$("#en"),n=nm?nm.value.trim():"";if(n&&!R.ds.some(x=>x!==d&&x.name==n))d.name=n;
@@ -382,11 +398,11 @@ function editWPhoto(k){const d=EDW;if(!d)return;const nm=$("#en"),n=nm?nm.value.
 (function(){let st=null;
  const A=()=>$("#app"),ok=()=>!S&&!$("#modal").innerHTML&&$("#lock").hidden;
  document.addEventListener("pointerdown",e=>{const w=e.target.closest&&e.target.closest(".ws");if(!w||!ok()||(e.pointerType=="mouse"&&e.button))return;
-  const f=w.querySelector(".wf");st={w,f,x:e.clientX,y:e.clientY,dx:0,on:0,lp:0,id:e.pointerId};SWM=0;
+  const f=w.querySelector(".wf"),sw=!!w.dataset.sw;st={w,f,sw,x:e.clientX,y:e.clientY,dx:0,on:0,lp:0,id:e.pointerId};SWM=0;
   st.t=setTimeout(()=>{if(st&&!st.on){st.lp=1;SWM=1;try{navigator.vibrate&&navigator.vibrate(30)}catch(_){}editW(+w.dataset.i)}},520)});
  document.addEventListener("pointermove",e=>{if(!st||e.pointerId!=st.id)return;const dx=e.clientX-st.x,dy=e.clientY-st.y;
   if(!st.on){if(Math.abs(dy)>10&&Math.abs(dy)>Math.abs(dx)){clearTimeout(st.t);st=null;return}
-   if(Math.abs(dx)>8){clearTimeout(st.t);if(dx<0){st.on=1;SWM=1;st.f.classList.add("dr");st.w.classList.add("sw")}else{SWM=1}}else return}
+   if(Math.abs(dx)>8){clearTimeout(st.t);if(dx<0&&st.sw){st.on=1;SWM=1;st.f.classList.add("dr");st.w.classList.add("sw")}else{SWM=1}}else return}
   if(!st.on)return;const W=st.w.offsetWidth,lim=Math.min(W*.55,200);st.dx=Math.max(-W,Math.min(0,dx));
   const sh=Math.max(st.dx,-lim-40*(1-Math.exp(-(-st.dx-lim>0?-st.dx-lim:0)/80)));
   st.f.style.transform=`translateX(${sh}px)`;st.w.style.setProperty("--p",Math.min(1,-st.dx/(lim*.6)));st.w.classList.toggle("go",-st.dx>=lim*.6)});
