@@ -155,6 +155,12 @@ header>div:first-child{display:flex;align-items:center;gap:10px}header>div:first
 .cam{position:absolute;right:0;bottom:0;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#fff;background:linear-gradient(180deg,#6a72ff,#3238d4);border:2px solid var(--bg);pointer-events:none}
 .wit{position:relative;overflow:hidden;margin:0 -14px;padding:10px 14px}
 .wit>*:not(.ov){position:relative;z-index:1}
+.ws{position:relative;overflow:hidden;margin:0 -14px;border-top:1px solid var(--ln);cursor:pointer;touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.ws .item{border-top:0}.ws .wit{margin:0}
+.wdel{position:absolute;inset:0;display:none;align-items:center;justify-content:flex-end;padding-right:22px;color:#fff;background:#d63a5c}
+.ws.sw .wdel{display:flex}.wdel svg{opacity:calc(.45 + var(--p,0)*.55);transform:scale(calc(.8 + var(--p,0)*.3))}
+.ws.go .wdel{background:#c2203f}
+.wf.dr{background:var(--bg);will-change:transform}
 .tl,.tl *{color:#fff!important;text-shadow:0 1px 5px rgba(0,0,0,.7)}
 .td,.td *{color:#0b0d1f!important;text-shadow:0 1px 5px rgba(255,255,255,.75)}
 .crb{position:relative;overflow:hidden;border-radius:18px;background:#000;touch-action:none;cursor:grab;-webkit-user-select:none;user-select:none}
@@ -194,7 +200,7 @@ button.tr{width:36px;height:36px;padding:0;display:grid;place-items:center;borde
 <button class="plus" id="plus" onclick="openM()" aria-label="Catat transaksi"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
 <nav id="nav"></nav>
 <div id="dbar" class="glass" hidden><span id="dbn" style="font-weight:700"></span><button id="dbd" onclick="bulkDel()">Hapus</button></div>
-<div id="modal"></div>
+<div id="modal"></div><input id="pfc" type="file" accept="image/*" capture="user" hidden onchange="pfSet(this.files[0]);this.value=''"><input id="pf" type="file" accept="image/*" hidden onchange="pfSet(this.files[0]);this.value=''">
 <div id="srch" class="scr" hidden><div class="sbar"><input id="sq" type="search" placeholder="Cari riwayat: nama, kategori, akun, nominal..." oninput="renderSR()" autocomplete="off"><button class="g" onclick="closeSearch()">Tutup</button></div><div id="sres"></div></div>
 <div id="mv" class="scr" hidden></div>
 <div id="ap" class="scr" hidden></div>
@@ -226,13 +232,13 @@ const fmt=ts=>new Date(ts).toLocaleString("id-ID",{weekday:"short",day:"numeric"
 const stamp=ts=>{const d=new Date(ts);return{ts,m:d.getMonth(),y:d.getFullYear()}};
 const mk=n=>{const d=new Date();return{id:Date.now(),name:n,m:d.getMonth(),y:d.getFullYear(),tab:"home",target:5000000,goal:"",accs:["Cash"],accx:{},open:{},bud:[],invs:[{id:1,k:"gold",n:"Emas",u:0,p:2224,h:[]}],loans:[],tx:[]}};
 let R=null,S=null,T="out",E=0,AN=1,PH=null,FXS=null,SR=0,APG=0,OVG=0,OVX={},MV=null,NP=[],ET="out",EPD=0,ANG=0,ANP=6,ANS=null,ANV=0,TRM="acc",TRI=0,TM=0,INK="gold";
-const APPV="16",SV=2,SNAPK="moneysev-pre-update";
+const APPV="17",SV=2,SNAPK="moneysev-pre-update";
 let DELM=false,DSel=new Set(),LDM=null,LSel=new Set(),ALLS=[],LPH=null;
 const TRASH='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg>';let RAW=null;
 try{RAW=localStorage.getItem(KEY)}catch(e){}
 try{R=JSON.parse(RAW)}catch(e){if(RAW){try{localStorage.setItem("moneysev-corrupt",RAW)}catch(_){}}}
 if(R&&typeof R!="object")R=null;
-try{if(R&&RAW&&R.appv!==APPV)localStorage.setItem(SNAPK,RAW)}catch(e){}
+try{localStorage.removeItem(SNAPK)}catch(e){}
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 if(!R){R={ds:[]};try{const o=JSON.parse(localStorage.getItem("moneysev-v1"));
  if(o&&o.accs){o.name="Utama";o.id=1;o.tab="home";if(o.gold&&o.gold.p>100000)o.gold.p/=1000;delete o.demo;R.ds.push(o)}}catch(e){}}
@@ -353,13 +359,45 @@ function renderSR(){const toks=($("#sq").value||"").trim().toLowerCase().split(/
 function pick(){
  const cs=R.ds.map(d=>({d,c:C(d)})),tot=cs.reduce((s,x)=>s+x.c.aset,0);
  return `<div class="card hero"><small>Total uang keseluruhan</small><div class="big">${rp(tot)}</div><small>${R.ds.length} dompet</small></div>
- <div class="card"><h2>Pilih dompet</h2><div class="sub">Ketuk dompet untuk masuk.</div>
- ${cs.map((x,i)=>`<div class="item row wit${PFS[x.d.id]?" hp":""}" style="cursor:pointer" onclick="enter(${i})">${PFS[x.d.id]?`<img class="ov" src="${PFS[x.d.id]}" alt="">`:""}<div class="${PFS[x.d.id]&&PFL[x.d.id]!=null?(PFL[x.d.id]>.55?"td":"tl"):""}"><b>${esc(x.d.name)}</b><div class="mu">Saldo ${rp(x.c.liq)}</div></div>
- <div style="text-align:right"><b>${rp(x.c.aset)}</b><div class="mu">total uang</div><button class="g" onclick="event.stopPropagation();askDel(${i})">Hapus</button></div></div>`).join("")||`<div class="mu">Belum ada dompet. Buat yang pertama di bawah.</div>`}
+ <div class="card"><h2>Pilih dompet</h2><div class="sub">Ketuk untuk masuk. Geser ke kiri untuk menghapus, tahan lama untuk mengedit.</div>
+ ${cs.map((x,i)=>`<div class="ws" data-i="${i}" onclick="enter(${i})"><div class="wdel">${TRASH.replace('width="18" height="18"','width="26" height="26"')}</div><div class="item row wit wf${PFS[x.d.id]?" hp":""}">${PFS[x.d.id]?`<img class="ov" src="${PFS[x.d.id]}" alt="">`:""}<div class="${PFS[x.d.id]&&PFL[x.d.id]!=null?(PFL[x.d.id]>.55?"td":"tl"):""}"><b>${esc(x.d.name)}</b></div>
+ <div class="${PFS[x.d.id]&&PFL[x.d.id]!=null?"":""}" style="text-align:right"><b>${rp(x.c.aset)}</b><div class="mu">Saldo</div></div></div></div>`).join("")||`<div class="mu">Belum ada dompet. Buat yang pertama di bawah.</div>`}
  <div class="f2" style="margin-top:10px"><input id="dn" placeholder="Contoh: Multimedia"><button onclick="addD()">Buat dompet</button></div></div>`}
 function enter(i){history.pushState({w:1},"");S=R.ds[i];S.tab="home";const n=new Date();S.m=n.getMonth();S.y=n.getFullYear();FL=FL0();E=0;AN=1;go()}
 function addD(){const n=$("#dn").value.trim();if(!n||R.ds.some(d=>d.name==n))return;R.ds.push(mk(n));AN=1;go()}
-function askDel(i){sheet(`<b>Hapus dompet ${esc(R.ds[i].name)}?</b><div class="mu">Semua akun, transaksi, dan hutang di dalamnya ikut terhapus.</div><button style="background:var(--ng)" onclick="ph('del','profile-'+R.ds[${i}].id);R.ds.splice(${i},1);closeM();go()">Hapus dompet</button><button class="g" onclick="closeM()">Batal</button>`)}
+let EDW=null,SWM=0;
+function delW(id){const i=R.ds.findIndex(d=>d.id==id);if(i<0)return;ph('del','profile-'+id);R.ds.splice(i,1);delete PFS[id];delete PFL[id];closeM();go()}
+function askDel(i){const d=R.ds[i];if(!d)return;const id=d.id;
+ sheet(`<b>Apakah Anda akan menghapus dompet ${esc(d.name)}?</b><div class="f2"><button class="gl" onclick="closeM()">Tidak</button><button style="background:var(--ng)" onclick="askDel2(${id})">Ya</button></div>`)}
+function askDel2(id){sheet(`<b>Apakah Anda sudah yakin akan tindakan Anda?</b><div class="mu">Segala data yang tersimpan akan terhapus selamanya.</div><div class="f2"><button class="gl" onclick="closeM()">Tidak</button><button style="background:var(--ng)" onclick="delW(${id})">Iya</button></div>`)}
+function editW(i){const d=R.ds[i];if(!d)return;EDW=d;
+ sheet(`<b>Edit dompet</b><label>Nama dompet</label><input id="en" value="${esc(d.name)}" maxlength="40" autocomplete="off"><div class="er" id="ee"></div>
+ <button class="gl" onclick="editWPhoto(0)">${PFS[d.id]?"Ganti foto profil":"Pilih foto profil"}</button>${PFS[d.id]?`<button class="g" style="color:var(--ng)" onclick="editWPhoto(2)">Hapus foto profil</button>`:""}
+ <button onclick="saveW(${i})">Simpan</button><button class="g" onclick="EDW=null;closeM()">Batal</button>`)}
+function saveW(i){const d=R.ds[i],n=$("#en").value.trim();if(!n){$("#ee").textContent="Nama tidak boleh kosong.";return}
+ if(R.ds.some(x=>x!==d&&x.name==n)){$("#ee").textContent="Nama dompet sudah dipakai.";return}d.name=n;EDW=null;closeM();go()}
+function editWPhoto(k){const d=EDW;if(!d)return;const nm=$("#en"),n=nm?nm.value.trim():"";if(n&&!R.ds.some(x=>x!==d&&x.name==n))d.name=n;
+ if(k==2){delete PFS[d.id];delete PFL[d.id];ph("del","profile-"+d.id);EDW=null;closeM();go();return}
+ closeM();$("#pf").click()}
+(function(){let st=null;
+ const A=()=>$("#app"),ok=()=>!S&&!$("#modal").innerHTML&&$("#lock").hidden;
+ document.addEventListener("pointerdown",e=>{const w=e.target.closest&&e.target.closest(".ws");if(!w||!ok()||(e.pointerType=="mouse"&&e.button))return;
+  const f=w.querySelector(".wf");st={w,f,x:e.clientX,y:e.clientY,dx:0,on:0,lp:0,id:e.pointerId};SWM=0;
+  st.t=setTimeout(()=>{if(st&&!st.on){st.lp=1;SWM=1;try{navigator.vibrate&&navigator.vibrate(30)}catch(_){}editW(+w.dataset.i)}},520)});
+ document.addEventListener("pointermove",e=>{if(!st||e.pointerId!=st.id)return;const dx=e.clientX-st.x,dy=e.clientY-st.y;
+  if(!st.on){if(Math.abs(dy)>10&&Math.abs(dy)>Math.abs(dx)){clearTimeout(st.t);st=null;return}
+   if(Math.abs(dx)>8){clearTimeout(st.t);if(dx<0){st.on=1;SWM=1;st.f.classList.add("dr");st.w.classList.add("sw")}else{SWM=1}}else return}
+  if(!st.on)return;const W=st.w.offsetWidth,lim=Math.min(W*.55,200);st.dx=Math.max(-W,Math.min(0,dx));
+  const sh=Math.max(st.dx,-lim-40*(1-Math.exp(-(-st.dx-lim>0?-st.dx-lim:0)/80)));
+  st.f.style.transform=`translateX(${sh}px)`;st.w.style.setProperty("--p",Math.min(1,-st.dx/(lim*.6)));st.w.classList.toggle("go",-st.dx>=lim*.6)});
+ const end=e=>{if(!st||(e&&e.pointerId!=st.id))return;clearTimeout(st.t);const c=st;st=null;
+  if(c.on){const lim=Math.min(c.w.offsetWidth*.55,200),hit=-c.dx>=lim*.6;c.f.style.transition="transform .22s ease";c.f.style.transform="";
+   setTimeout(()=>{c.f.style.transition="";c.f.classList.remove("dr");c.w.classList.remove("sw","go")},230);
+   if(hit)askDel(+c.w.dataset.i)}
+  setTimeout(()=>{SWM=0},350)};
+ document.addEventListener("pointerup",end);document.addEventListener("pointercancel",end);
+ document.addEventListener("contextmenu",e=>{if(e.target.closest&&e.target.closest(".ws"))e.preventDefault()});
+ document.addEventListener("click",e=>{if(SWM){e.stopPropagation();e.preventDefault()}},true)})();
 const SK=Array.from({length:8},(_,i)=>`<s class="sk" style="left:${(i*37+11)%88}%;top:${(i*53+9)%80}%;--d:${(i*1.1).toFixed(1)}s;--z:${(.8+((i*13)%7)/10).toFixed(1)}"></s>`).join("");
 function home(c){
  const p=pct(c.aset),gold=S.target>0&&c.aset>=S.target,l=applyF(S.tx),n=fN(),ci=l.filter(t=>t.type=="in"&&!t.ln),title=FL.range=="month"?"Riwayat bulan ini":FL.range=="all"?"Riwayat transaksi":"Riwayat tanggal pilihan";
@@ -621,10 +659,10 @@ function go(){R.ds.forEach(fixD);save();const pk=!S,fx=FXS,tab=pk?"":S.tab;FXS=n
  const a=$("#app");a.classList.remove("enter");a.style.setProperty("--dx",TDIR*34+"px");TDIR=0;a.innerHTML=pk?pick():TABS.find(t=>t[0]==S.tab)[2](C());
  if(AN){void a.offsetWidth;a.classList.add("enter");AN=0}if(fx&&!pk)runFX(fx);if(SR&&!pk)renderSR();if(MV&&!pk)renderMV();if(APG&&!pk)renderAP();if(OVG&&!pk)renderOV();if(ANG&&!pk)renderAN();goalCheck(fx?2900:450);fab();dbSync()}
 function rmI(i){ask(`Hapus investasi ${esc(S.invs[i].n)}?`,()=>{S.invs.splice(i,1);go()})}
-function bk(){return`<div class="card"><h2>Backup &amp; data</h2><div class="sub">Format Excel (.xlsx) sama seperti file Keuanganku. Bisa dibuka di Google Sheets lewat File → Impor. Foto nota tidak ikut di backup. File backup lama tetap bisa dipulihkan di versi aplikasi yang lebih baru.</div><div class="f2"><button class="gl" onclick="bkOut()">Backup ke xlsx</button><button class="gl" onclick="$('#bkf').click()">Pulihkan dari xlsx</button></div><input id="bkf" type="file" accept=".xlsx" hidden onchange="bkIn(this.files[0]);this.value=''">${localStorage.getItem(SNAPK)?`<button class="gl w" onclick="snapAsk()">Kembalikan data sebelum update terakhir</button>`:""}<button class="w" style="background:var(--ng)" onclick="wipeAsk()">Hapus semua data</button></div>`}
+function bk(){return`<div class="card"><h2>Backup &amp; data</h2><div class="sub">Format Excel (.xlsx) sama seperti file Keuanganku. Bisa dibuka di Google Sheets lewat File → Impor. Foto nota tidak ikut di backup. File backup lama tetap bisa dipulihkan di versi aplikasi yang lebih baru.</div><div class="f2"><button class="gl" onclick="bkOut()">Backup ke xlsx</button><button class="gl" onclick="$('#bkf').click()">Pulihkan dari xlsx</button></div><input id="bkf" type="file" accept=".xlsx" hidden onchange="bkIn(this.files[0]);this.value=''"><button class="w" style="background:var(--ng)" onclick="wipeAsk()">Hapus semua data</button></div>`}
 function photoUI(){return`<div style="display:flex;justify-content:center;margin:4px 0 16px"><div class="avw"><button class="avb" onclick="pfMenu()" aria-label="Foto profil">${PF?`<img src="${PF}" alt="">`:`<svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>`}</button><span class="cam"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span></div></div>
-<input id="pfc" type="file" accept="image/*" capture="user" hidden onchange="pfSet(this.files[0]);this.value=''"><input id="pf" type="file" accept="image/*" hidden onchange="pfSet(this.files[0]);this.value=''">`}
-function pfMenu(){sheet(`<b>Foto dompet ${esc(S.name)}</b><button class="gl" onclick="closeM();$('#pfc').click()">Ambil foto</button><button class="gl" onclick="closeM();$('#pf').click()">Unggah dari galeri</button>${PF?`<button class="g" style="color:var(--ng)" onclick="closeM();pfDel()">Hapus foto</button>`:""}<button class="g" onclick="closeM()">Batal</button>`)}
+`}
+function pfMenu(){EDW=null;sheet(`<b>Foto dompet ${esc(S.name)}</b><button class="gl" onclick="closeM();$('#pfc').click()">Ambil foto</button><button class="gl" onclick="closeM();$('#pf').click()">Unggah dari galeri</button>${PF?`<button class="g" style="color:var(--ng)" onclick="closeM();pfDel()">Hapus foto</button>`:""}<button class="g" onclick="closeM()">Batal</button>`)}
 function lumOf(u){return new Promise(ok=>{const im=new Image();im.onload=()=>{try{const W=60,H=20,c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d"),k=Math.max(W/im.width,H/im.height),w=im.width*k,h=im.height*k;x.drawImage(im,(W-w)/2,(H-h)/2,w,h);const d=x.getImageData(0,0,W,H).data;let t=0,n=0;for(let j=0;j<H;j++)for(let i=0;i<W*.4;i++){const o=(j*W+i)*4;t+=(.2126*d[o]+.7152*d[o+1]+.0722*d[o+2])/255;n++}ok(t/n)}catch(e){ok(null)}};im.onerror=()=>ok(null);im.src=u})}
 let CR=null;
 function pfSet(f){if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,1600/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);const i2=new Image();i2.onload=()=>cropOpen(i2);i2.src=c.toDataURL("image/jpeg",.92)};im.src=r.result};r.readAsDataURL(f)}
@@ -647,7 +685,7 @@ function cropDraw(){const c=CR;if(!c)return;const w=c.im.width*c.s,h=c.im.height
  const i=$("#cri");if(!i)return;i.style.width=w+"px";i.style.height=h+"px";i.style.left=c.x+"px";i.style.top=c.y+"px";const z=$("#crz");if(z)z.value=c.s/c.mn}
 async function cropSave(){const c=CR;if(!c)return;CR=null;const cv=document.createElement("canvas");cv.width=cv.height=800;
  cv.getContext("2d").drawImage(c.im,-c.x/c.s,-c.y/c.s,c.B/c.s,c.B/c.s,0,0,800,800);
- const id=S.id,u=cv.toDataURL("image/jpeg",.85);PFS[id]=u;PF=u;PFL[id]=await lumOf(u);ph("put","profile-"+id,u);closeM();go()}
+ const W=EDW||S;EDW=null;const id=W.id,u=cv.toDataURL("image/jpeg",.85);PFS[id]=u;PF=u;PFL[id]=await lumOf(u);ph("put","profile-"+id,u);closeM();go()}
 function pfDel(){PF=null;delete PFS[S.id];delete PFL[S.id];ph("del","profile-"+S.id);go()}
 function confirmBox(t,s,y,fn){CBF=fn;sheet(`<b>${t}</b><div class="mu">${s}</div><div class="f2"><button class="gl" onclick="CBF=null;closeM()">Batal</button><button onclick="yes2()">${y}</button></div>`)}
 function yes2(){const f=CBF;CBF=null;closeM();if(f)f()}
@@ -786,7 +824,6 @@ function doPR(){let a=+$("#pr1").value,b=+$("#pr2").value;if(a>b)[a,b]=[b,a];
  makeNota("NOTA RIWAYAT TRANSAKSI",sub,l,x,"Nota-Moneysev-"+fnm(S.name)+"-"+fnm(sub))}
 function wipeAsk(){sheet(`<b>Hapus semua data?</b><div class="mu">Semua dompet, transaksi, foto, dan PIN di HP ini dihapus permanen, lalu aplikasi mulai dari kosong. Sebaiknya backup ke xlsx dulu.</div><button class="gl" onclick="closeM();bkOut()">Backup dulu</button><input id="wz" placeholder="Ketik HAPUS" autocomplete="off"><button style="background:var(--ng)" onclick="wipeAll()">Hapus semua data</button><button class="g" onclick="closeM()">Batal</button>`)}
 async function wipeAll(){if($("#wz").value.trim().toUpperCase()!="HAPUS")return;try{localStorage.removeItem(KEY);localStorage.removeItem("moneysev-v1");indexedDB.deleteDatabase("moneysev-img");const k=await caches.keys();await Promise.all(k.map(x=>caches.delete(x)));const r=await navigator.serviceWorker.getRegistrations();await Promise.all(r.map(x=>x.unregister()))}catch(e){}location.reload()}
-function snapAsk(){ask("Kembalikan semua data ke kondisi sebelum update terakhir? Perubahan setelah update akan hilang.",()=>{try{const r=localStorage.getItem(SNAPK);if(!r||!JSON.parse(r).ds)throw 0;localStorage.setItem(KEY,r);location.reload()}catch(e){toast("Cadangan tidak tersedia")}})}
 const curSet=()=>DELM?DSel:LDM?LSel:null,chk=(i,on)=>document.querySelectorAll('input[data-t="'+i+'"]').forEach(e=>e.checked=on);
 function dmStart(){DELM=true;DSel=new Set();AN=0;go()}
 function dmEnd(){DELM=false;DSel=new Set();AN=0;go()}
